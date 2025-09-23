@@ -1,0 +1,52 @@
+#!/bin/sh
+set -euf
+
+# gh: GitHub CLI
+#
+# GitHub CLI brings GitHub to your terminal. It reduces context switching,
+# helps you focus, and enables you to script and create your own workflows.
+#
+# This script updates gh itself and its extensions.
+#
+if command -v gh >/dev/null 2>&1; then
+    echo "Updating GitHub CLI and extensions..."
+
+    # Check current version
+    echo "Current gh version: $(gh --version | head -n1)"
+
+    # Update gh extensions
+    echo "Updating gh extensions..."
+    gh extension list | grep -E '^[^[:space:]]' | awk '{print $3}' | while read -r extension; do
+        if [ -n "$extension" ]; then
+            echo "Updating extension: $extension"
+            gh extension upgrade "$extension" || echo "Failed to update $extension"
+        fi
+    done 2>/dev/null || echo "No extensions installed or extension list command failed"
+
+    # Upgrade all extensions at once (if supported)
+    gh extension upgrade --all 2>/dev/null || echo "Bulk extension upgrade not available or no extensions to upgrade"
+
+    # gh itself typically gets updated via package managers, so provide guidance
+    echo "To update gh itself, use your package manager:"
+    echo "  macOS (Homebrew): brew upgrade gh"
+    echo "  Ubuntu/Debian: sudo apt update && sudo apt upgrade gh"
+    echo "  Windows (Winget): winget upgrade GitHub.cli"
+    echo "  Windows (Chocolatey): choco upgrade gh"
+    echo "  Or download from: https://github.com/cli/cli/releases"
+
+    # Show current status
+    echo "Installed extensions:"
+    gh extension list 2>/dev/null || echo "No extensions installed"
+
+    # Check authentication status
+    if gh auth status >/dev/null 2>&1; then
+        echo "✓ GitHub authentication is configured"
+    else
+        echo "⚠ GitHub authentication not configured. Run 'gh auth login' to set up."
+    fi
+
+    echo "GitHub CLI update completed."
+else
+    echo "GitHub CLI (gh) not found, skipping gh updates."
+    echo "To install gh, visit: https://cli.github.com"
+fi

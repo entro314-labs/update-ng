@@ -1,0 +1,59 @@
+#!/bin/sh
+set -euf
+
+# Rye: Modern Python project management
+#
+# Rye is an experimental package management solution for Python.
+# It installs and manages Python installations, manages pyproject.toml
+# based projects, and provides a unified experience.
+#
+# This script updates Rye itself and project dependencies.
+#
+if command -v rye >/dev/null 2>&1; then
+    echo "Updating Rye and Python projects..."
+
+    # Update Rye itself
+    echo "Updating Rye to latest version..."
+    rye self update
+
+    # If we're in a Rye project, update dependencies
+    if [ -f "pyproject.toml" ] && rye show >/dev/null 2>&1; then
+        echo "Found Rye project, updating dependencies..."
+
+        # Sync and update dependencies
+        rye sync --update-all
+
+        # Update Python version if there's a newer patch release
+        echo "Checking for Python updates..."
+        rye pin --relaxed
+
+        # Clean up old environments
+        echo "Cleaning up unused environments..."
+        # Rye doesn't have a built-in cleanup command yet, but sync removes unused deps
+
+    elif [ -f "pyproject.toml" ]; then
+        echo "Found pyproject.toml but not a Rye project"
+        echo "Run 'rye init' to convert to a Rye project"
+    else
+        echo "No Rye project found in current directory"
+    fi
+
+    # Update global tools if any are installed
+    echo "Updating globally installed tools..."
+    rye tools list | while read -r tool; do
+        if [ -n "$tool" ]; then
+            echo "Updating tool: $tool"
+            rye tools upgrade "$tool" || echo "Failed to update $tool"
+        fi
+    done 2>/dev/null || echo "No global tools to update"
+
+    # Show current configuration
+    echo "Current Rye version: $(rye --version)"
+    echo "Python toolchains:"
+    rye toolchain list
+
+    echo "Rye update completed."
+else
+    echo "Rye not found, skipping Rye updates."
+    echo "To install Rye, visit: https://rye-up.com"
+fi

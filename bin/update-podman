@@ -1,0 +1,63 @@
+#!/bin/sh
+set -euf
+
+# Podman: Daemonless container engine
+#
+# Podman is a daemonless container engine for developing, managing, and running
+# containers and pods. This script updates images and cleans up unused resources.
+#
+if command -v podman >/dev/null 2>&1; then
+    echo "Updating Podman images and cleaning up containers..."
+
+    # Pull updates for all currently used images
+    echo "Pulling updates for existing images..."
+    podman images --format "table {{.Repository}}:{{.Tag}}" | grep -v "REPOSITORY.*TAG" | grep -v "<none>" | while read -r repo tag _; do
+        if [ "$repo" != "<none>" ] && [ "$tag" != "<none>" ]; then
+            image="$repo:$tag"
+            echo "Updating image: $image"
+            podman pull "$image" || echo "Failed to update $image"
+        fi
+    done
+
+    # Update Podman Compose images if compose file exists
+    if [ -f "docker-compose.yml" ] || [ -f "docker-compose.yaml" ] || [ -f "compose.yml" ] || [ -f "compose.yaml" ]; then
+        echo "Found Compose file, updating services..."
+        if command -v podman-compose >/dev/null 2>&1; then
+            podman-compose pull
+        elif podman compose --help >/dev/null 2>&1; then
+            podman compose pull
+        fi
+    fi
+
+    # Clean up unused containers
+    echo "Cleaning up unused Podman resources..."
+    podman container prune --force
+
+    # Clean up unused pods
+    podman pod prune --force
+
+    # Clean up unused volumes
+    podman volume prune --force
+
+    # Clean up unused networks
+    podman network prune --force
+
+    # Remove dangling images
+    podman image prune --force
+
+    # Optionally remove unused images (commented out as it can be aggressive)
+    # echo "Removing unused images..."
+    # podman image prune --all --force
+
+    # Show disk usage summary
+    echo "Podman disk usage summary:"
+    podman system df 2>/dev/null || echo "System df not available in this Podman version"
+
+    # Auto-update containers if auto-update labels are set
+    echo "Running auto-update for containers with auto-update labels..."
+    podman auto-update || echo "Auto-update completed or not available"
+
+    echo "Podman update and cleanup completed."
+else
+    echo "Podman not found, skipping Podman updates."
+fi

@@ -1,0 +1,41 @@
+#!/bin/sh
+set -euf
+
+# winget: Windows Package Manager
+#
+# Windows Package Manager is Microsoft's official package manager for Windows.
+# It allows you to discover, install, upgrade, remove and configure applications.
+#
+# This script updates packages managed by winget.
+#
+if command -v winget >/dev/null 2>&1; then
+    echo "Updating packages via Windows Package Manager (winget)..."
+
+    # Update package sources first
+    echo "Updating package sources..."
+    winget source update
+
+    # Upgrade all installed packages
+    echo "Upgrading all installed packages..."
+    winget upgrade --all --accept-package-agreements --accept-source-agreements --silent
+
+    # Clean up package cache
+    echo "Note: winget doesn't have a built-in cache cleanup command"
+    echo "Cache is managed automatically by Windows Package Manager"
+
+    # Show summary of installed packages
+    echo "Currently installed packages:"
+    winget list --source winget | head -20
+    echo "..."
+
+    # Check for available updates (this might be redundant after upgrade --all)
+    echo "Checking for any remaining updates..."
+    winget upgrade --include-unknown
+
+    echo "winget update completed."
+    echo "Note: Some updates may require administrator privileges or system restart"
+else
+    echo "winget not found, skipping winget updates."
+    echo "winget is available on Windows 10 (version 1709+) and Windows 11"
+    echo "To install winget, visit: https://github.com/microsoft/winget-cli"
+fi

@@ -1,0 +1,58 @@
+#!/bin/sh
+set -euf
+
+# MacPorts: Package manager for macOS
+#
+# MacPorts is a package management system that simplifies the installation
+# of software on macOS and Darwin operating systems. It's an alternative
+# to Homebrew with a focus on building from source.
+#
+# This script updates MacPorts itself and all installed ports.
+#
+if command -v port >/dev/null 2>&1; then
+    echo "Updating MacPorts and installed ports..."
+
+    # Check if running as root (MacPorts typically requires sudo)
+    if [ "$(id -u)" -eq 0 ]; then
+        echo "Running as root - proceeding with MacPorts updates"
+        PORT_CMD="port"
+    else
+        echo "MacPorts typically requires sudo privileges"
+        PORT_CMD="sudo port"
+    fi
+
+    # Update MacPorts base system and port definitions
+    echo "Updating MacPorts base and port definitions..."
+    $PORT_CMD selfupdate
+
+    # List outdated ports
+    echo "Checking for outdated ports..."
+    OUTDATED=$($PORT_CMD outdated 2>/dev/null || echo "")
+
+    if [ -n "$OUTDATED" ]; then
+        echo "Outdated ports found:"
+        echo "$OUTDATED"
+        echo ""
+
+        # Upgrade all outdated ports
+        echo "Upgrading all outdated ports..."
+        $PORT_CMD upgrade outdated
+    else
+        echo "All ports are up to date."
+    fi
+
+    # Clean up inactive ports and build files
+    echo "Cleaning up inactive ports and build files..."
+    $PORT_CMD uninstall inactive || echo "No inactive ports to remove"
+    $PORT_CMD clean --all all || echo "Cleanup completed"
+
+    # Reclaim disk space
+    echo "Reclaiming disk space..."
+    $PORT_CMD reclaim || echo "Reclaim completed"
+
+    echo "MacPorts update completed."
+    echo "Tip: Use 'port installed' to see all installed ports"
+else
+    echo "MacPorts not found, skipping MacPorts updates."
+    echo "To install MacPorts, visit: https://www.macports.org/install.php"
+fi

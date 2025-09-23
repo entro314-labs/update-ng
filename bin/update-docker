@@ -1,0 +1,57 @@
+#!/bin/sh
+set -euf
+
+# Docker: Container platform and image management
+#
+# This script updates Docker images, removes unused containers and images,
+# and updates Docker Compose if available.
+#
+if command -v docker >/dev/null 2>&1; then
+    echo "Updating Docker images and cleaning up containers..."
+
+    # Check if Docker daemon is running
+    if ! docker info >/dev/null 2>&1; then
+        echo "Docker daemon is not running, skipping Docker updates."
+        exit 0
+    fi
+
+    # Pull updates for all currently used images
+    echo "Pulling updates for existing images..."
+    docker images --format "table {{.Repository}}:{{.Tag}}" | grep -v "REPOSITORY:TAG" | grep -v "<none>:<none>" | while read -r image; do
+        if [ "$image" != "<none>:<none>" ]; then
+            echo "Updating image: $image"
+            docker pull "$image" || echo "Failed to update $image"
+        fi
+    done
+
+    # Update Docker Compose images if docker-compose.yml exists
+    if [ -f "docker-compose.yml" ] || [ -f "docker-compose.yaml" ] || [ -f "compose.yml" ] || [ -f "compose.yaml" ]; then
+        echo "Found Docker Compose file, updating services..."
+        if command -v docker-compose >/dev/null 2>&1; then
+            docker-compose pull
+        elif docker compose version >/dev/null 2>&1; then
+            docker compose pull
+        fi
+    fi
+
+    # Clean up unused containers, networks, and volumes
+    echo "Cleaning up unused Docker resources..."
+    docker container prune --force
+    docker network prune --force
+    docker volume prune --force
+
+    # Remove dangling images (images with no tags)
+    docker image prune --force
+
+    # Optionally remove unused images (commented out as it can be aggressive)
+    # echo "Removing unused images..."
+    # docker image prune --all --force
+
+    # Show disk usage summary
+    echo "Docker disk usage summary:"
+    docker system df
+
+    echo "Docker update and cleanup completed."
+else
+    echo "Docker not found, skipping Docker updates."
+fi

@@ -1,0 +1,19 @@
+#!/bin/sh
+set -euf
+
+# Example code to find each .git and update its project:
+#
+#     find "$HOME" -type d -name '.git' -exec dirname {} \; | 
+#     while read -r x; do 
+#         cd "$x" &&
+#         update-cargo-crate
+#     done
+
+update_git_pull() {
+    if command -v git >/dev/null 2>&1; then
+        git pull && 
+        git submodule update --init --recursive
+    fi
+}
+
+update_git_pull

@@ -1,0 +1,92 @@
+#!/bin/sh
+set -euf
+
+# AWS CLI: Amazon Web Services Command Line Interface
+#
+# The AWS CLI is a unified tool to manage your AWS services.
+# This script updates AWS CLI and its components.
+#
+# This script handles both AWS CLI v1 and v2.
+#
+if command -v aws >/dev/null 2>&1; then
+    echo "Updating AWS CLI..."
+
+    # Check AWS CLI version
+    AWS_VERSION=$(aws --version 2>&1 | head -n1)
+    echo "Current AWS CLI version: $AWS_VERSION"
+
+    # Determine if this is AWS CLI v1 or v2
+    if echo "$AWS_VERSION" | grep -q "aws-cli/2"; then
+        echo "AWS CLI v2 detected"
+
+        # AWS CLI v2 update method depends on installation method
+        echo "To update AWS CLI v2, use the method you used to install it:"
+        echo "  Installer (macOS/Linux): Download from https://aws.amazon.com/cli/"
+        echo "  Homebrew (macOS): brew upgrade awscli"
+        echo "  pip: pip install --upgrade awscli"
+        echo "  Docker: docker pull amazon/aws-cli:latest"
+
+    elif echo "$AWS_VERSION" | grep -q "aws-cli/1"; then
+        echo "AWS CLI v1 detected"
+
+        # Try to update via pip if available
+        if command -v pip >/dev/null 2>&1; then
+            echo "Updating AWS CLI v1 via pip..."
+            pip install --upgrade awscli
+        elif command -v pip3 >/dev/null 2>&1; then
+            echo "Updating AWS CLI v1 via pip3..."
+            pip3 install --upgrade awscli
+        else
+            echo "pip not found. Install AWS CLI v1 updates manually:"
+            echo "  pip install --upgrade awscli"
+        fi
+    else
+        echo "Unknown AWS CLI version format"
+    fi
+
+    # Update AWS CLI plugins and extensions
+    echo "Checking for AWS CLI plugins..."
+
+    # Session Manager plugin
+    if command -v session-manager-plugin >/dev/null 2>&1; then
+        echo "Session Manager plugin detected"
+        echo "To update: Download from https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html"
+    fi
+
+    # SAM CLI
+    if command -v sam >/dev/null 2>&1; then
+        echo "SAM CLI detected: $(sam --version)"
+        echo "To update SAM CLI:"
+        echo "  Homebrew: brew upgrade aws-sam-cli"
+        echo "  pip: pip install --upgrade aws-sam-cli"
+    fi
+
+    # CDK CLI
+    if command -v cdk >/dev/null 2>&1; then
+        echo "CDK CLI detected: $(cdk --version)"
+        echo "To update CDK CLI: npm install -g aws-cdk@latest"
+    fi
+
+    # EB CLI
+    if command -v eb >/dev/null 2>&1; then
+        echo "EB CLI detected: $(eb --version)"
+        echo "To update EB CLI: pip install --upgrade awsebcli"
+    fi
+
+    # Check AWS configuration
+    if [ -f "$HOME/.aws/config" ] || [ -f "$HOME/.aws/credentials" ]; then
+        echo "✓ AWS configuration files found"
+    else
+        echo "⚠ No AWS configuration found. Run 'aws configure' to set up."
+    fi
+
+    # Show current default region if configured
+    DEFAULT_REGION=$(aws configure get region 2>/dev/null || echo "not configured")
+    echo "Default region: $DEFAULT_REGION"
+
+    echo "AWS CLI update completed."
+    echo "Note: After updating, you may need to restart your shell"
+else
+    echo "AWS CLI not found, skipping AWS CLI updates."
+    echo "To install AWS CLI, visit: https://aws.amazon.com/cli/"
+fi

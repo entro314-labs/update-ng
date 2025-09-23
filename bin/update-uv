@@ -1,0 +1,40 @@
+#!/bin/sh
+set -euf
+
+# uv: Ultra-fast Python package installer and resolver
+#
+# uv is a modern Python package installer and dependency resolver
+# written in Rust. It's designed to be a drop-in replacement for pip.
+#
+# This script updates uv itself and can be used to update Python packages
+# managed by uv in the current environment.
+#
+if command -v uv >/dev/null 2>&1; then
+    echo "Updating uv and Python packages..."
+
+    # Update uv itself to the latest version
+    uv self update
+
+    # If we're in a virtual environment or project with uv.lock, sync dependencies
+    if [ -f "uv.lock" ] || [ -f "pyproject.toml" ]; then
+        echo "Found uv project, syncing dependencies..."
+        uv sync --upgrade
+    elif [ -n "${VIRTUAL_ENV:-}" ]; then
+        echo "In virtual environment, upgrading installed packages..."
+        # List installed packages and upgrade them
+        uv pip list --format=freeze | cut -d'=' -f1 | xargs -r uv pip install --upgrade
+    else
+        echo "No uv project or virtual environment detected, skipping package updates."
+        echo "To update global packages, consider using 'uv tool upgrade --all'"
+    fi
+
+    # Update global tools installed via uv
+    if command -v uv >/dev/null 2>&1; then
+        echo "Updating globally installed uv tools..."
+        uv tool upgrade --all 2>/dev/null || echo "No global uv tools to upgrade or uv tool command not available."
+    fi
+
+    echo "uv update completed."
+else
+    echo "uv not found, skipping uv updates."
+fi

@@ -1,0 +1,7 @@
+#!/bin/sh
+set -euf
+
+# pkg_add for NetBSD, OpenBSD
+if command -v pkg_add >/dev/null 2>&1; then
+    pkg_add -u
+fi

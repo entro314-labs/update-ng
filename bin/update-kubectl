@@ -1,0 +1,83 @@
+#!/bin/sh
+set -euf
+
+# kubectl: Kubernetes command-line tool
+#
+# kubectl allows you to run commands against Kubernetes clusters.
+# This script updates kubectl and related Kubernetes tools.
+#
+if command -v kubectl >/dev/null 2>&1; then
+    echo "Updating kubectl and Kubernetes tools..."
+
+    # Show current kubectl version
+    echo "Current kubectl version:"
+    kubectl version --client --output=yaml 2>/dev/null || kubectl version --client 2>/dev/null || echo "Could not get kubectl version"
+
+    # kubectl update method depends on installation method
+    echo "To update kubectl, use the method you used to install it:"
+
+    # Check common installation methods and provide guidance
+    if command -v brew >/dev/null 2>&1; then
+        echo "  Homebrew (macOS): brew upgrade kubectl"
+    fi
+
+    if command -v gcloud >/dev/null 2>&1; then
+        echo "  Google Cloud SDK: gcloud components update kubectl"
+        # Try to update if gcloud-managed
+        if gcloud components list --filter="id:kubectl AND state:Installed" --format="value(id)" | grep -q "kubectl"; then
+            echo "kubectl is managed by gcloud, updating..."
+            gcloud components update kubectl --quiet
+        fi
+    fi
+
+    if command -v snap >/dev/null 2>&1; then
+        echo "  Snap: sudo snap refresh kubectl"
+    fi
+
+    echo "  Direct download: curl -LO \"https://dl.k8s.io/release/\$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl\""
+    echo "  Package managers: apt-get, yum, etc."
+
+    # Update kubectl plugins via krew if available
+    if command -v kubectl-krew >/dev/null 2>&1; then
+        echo "Updating kubectl plugins via krew..."
+        kubectl krew update
+        kubectl krew upgrade
+    elif kubectl krew version >/dev/null 2>&1; then
+        echo "Updating kubectl plugins via krew..."
+        kubectl krew update
+        kubectl krew upgrade
+    else
+        echo "krew (kubectl plugin manager) not found"
+        echo "To install krew: https://krew.sigs.k8s.io/docs/user-guide/setup/install/"
+    fi
+
+    # Check cluster connectivity
+    if kubectl cluster-info >/dev/null 2>&1; then
+        echo "✓ Connected to Kubernetes cluster:"
+        kubectl cluster-info --request-timeout=5s 2>/dev/null || echo "Cluster info timeout"
+    else
+        echo "⚠ Not connected to a Kubernetes cluster"
+        echo "Configure access with: kubectl config use-context <context-name>"
+    fi
+
+    # Show current context
+    CURRENT_CONTEXT=$(kubectl config current-context 2>/dev/null || echo "none")
+    echo "Current context: $CURRENT_CONTEXT"
+
+    # Update Helm if available (common Kubernetes tool)
+    if command -v helm >/dev/null 2>&1; then
+        echo "Helm detected, updating repositories..."
+        helm repo update
+    fi
+
+    # Show available contexts
+    echo "Available contexts:"
+    kubectl config get-contexts --no-headers 2>/dev/null | head -5 || echo "No contexts available"
+
+    echo "kubectl update completed."
+    echo "Check 'kubectl version' to verify server compatibility"
+else
+    echo "kubectl not found, skipping kubectl updates."
+    echo "To install kubectl:"
+    echo "  Visit: https://kubernetes.io/docs/tasks/tools/install-kubectl/"
+fi

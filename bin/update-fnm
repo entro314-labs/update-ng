@@ -1,0 +1,46 @@
+#!/bin/sh
+set -euf
+
+# fnm: Fast Node Manager
+#
+# fnm is a fast and simple Node.js version manager built in Rust.
+# It's designed to be cross-platform and much faster than nvm.
+#
+# This script updates fnm itself and can optionally update Node.js
+# to the latest LTS version if no specific version is pinned.
+#
+if command -v fnm >/dev/null 2>&1; then
+    echo "Updating fnm and Node.js versions..."
+
+    # Check if fnm is installed via a package manager that supports self-update
+    # fnm doesn't have a built-in self-update command, so we'll check for updates
+    echo "fnm version: $(fnm --version)"
+    echo "To update fnm itself, use your package manager (e.g., brew upgrade fnm, cargo install fnm)"
+
+    # Update the list of available Node.js versions
+    echo "Refreshing available Node.js versions..."
+    # Note: fnm doesn't have a refresh command, it fetches versions as needed
+
+    # Install/update to latest LTS if no .nvmrc or .node-version file exists
+    if [ ! -f ".nvmrc" ] && [ ! -f ".node-version" ] && [ ! -f "package.json" ]; then
+        echo "No version file found, installing latest LTS Node.js..."
+        fnm install --lts
+        fnm default lts-latest
+    else
+        echo "Version constraints found, skipping automatic Node.js update."
+        echo "Use 'fnm install <version>' to update to a specific version."
+    fi
+
+    # List currently installed versions
+    echo "Currently installed Node.js versions:"
+    fnm list
+
+    # Show which version is currently being used
+    echo "Current Node.js version: $(fnm current 2>/dev/null || echo 'No version set')"
+
+    echo "fnm update completed."
+    echo "Tip: Run 'fnm install --lts && fnm default lts-latest' to update to latest LTS"
+else
+    echo "fnm not found, skipping fnm updates."
+    echo "To install fnm, visit: https://github.com/Schniz/fnm"
+fi

@@ -1,0 +1,50 @@
+#!/bin/sh
+set -euf
+
+# Volta: JavaScript Tool Manager
+#
+# Volta is a fast, reliable tool for managing your JavaScript toolchain.
+# It ensures you always use the right versions of Node, npm, yarn, or other JS tools.
+#
+# This script updates Volta itself and the tools it manages.
+#
+if command -v volta >/dev/null 2>&1; then
+    echo "Updating Volta and JavaScript tools..."
+
+    # Update Volta itself
+    echo "Updating Volta..."
+    volta install volta@latest || echo "Volta self-update not available, use your package manager to update Volta"
+
+    # Update Node.js to latest LTS if no pinned version
+    if [ ! -f "package.json" ] || ! volta list all | grep -q "current"; then
+        echo "Installing latest LTS Node.js via Volta..."
+        volta install node@lts
+    else
+        echo "Node.js version pinned in project, skipping automatic update"
+    fi
+
+    # Update npm to latest
+    echo "Installing latest npm via Volta..."
+    volta install npm@latest
+
+    # Update yarn if it's being used
+    if volta list all | grep -q "yarn" || [ -f "yarn.lock" ]; then
+        echo "Installing latest Yarn via Volta..."
+        volta install yarn@latest
+    fi
+
+    # Update pnpm if it's being used
+    if volta list all | grep -q "pnpm" || [ -f "pnpm-lock.yaml" ]; then
+        echo "Installing latest pnpm via Volta..."
+        volta install pnpm@latest
+    fi
+
+    # Show what's currently installed
+    echo "Currently managed tools:"
+    volta list all
+
+    echo "Volta update completed."
+else
+    echo "Volta not found, skipping Volta updates."
+    echo "To install Volta, visit: https://volta.sh"
+fi

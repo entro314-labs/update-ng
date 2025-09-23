@@ -1,0 +1,8 @@
+#!/bin/sh
+set -euf
+
+# NPM: Node Package Manager
+if command -v npm >/dev/null 2>&1; then
+    npm install -g npm
+    npm update -g
+fi

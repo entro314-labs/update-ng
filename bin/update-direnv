@@ -1,0 +1,100 @@
+#!/bin/sh
+set -euf
+
+# direnv: Environment variable management
+#
+# direnv is an extension for your shell that loads and unloads environment variables
+# depending on the current directory. This script updates direnv itself.
+#
+if command -v direnv >/dev/null 2>&1; then
+    echo "Updating direnv..."
+
+    # Show current direnv version
+    echo "Current direnv version: $(direnv version)"
+
+    # direnv update method depends on installation method
+    echo "To update direnv, use the method you used to install it:"
+
+    # Check common installation methods
+    if command -v brew >/dev/null 2>&1; then
+        echo "  Homebrew (macOS): brew upgrade direnv"
+    fi
+
+    echo "  Package managers:"
+    echo "    Ubuntu/Debian: sudo apt update && sudo apt upgrade direnv"
+    echo "    Fedora: sudo dnf upgrade direnv"
+    echo "    Arch: sudo pacman -Syu direnv"
+    echo "  Direct download: https://github.com/direnv/direnv/releases"
+
+    # Check if direnv is properly hooked into the shell
+    echo "Checking direnv shell integration..."
+
+    # Try to detect shell integration
+    if [ -n "${BASH_VERSION:-}" ]; then
+        if grep -q "direnv hook bash" ~/.bashrc 2>/dev/null; then
+            echo "✓ direnv is integrated with bash"
+        else
+            echo "⚠ Add this to your ~/.bashrc: eval \"\$(direnv hook bash)\""
+        fi
+    elif [ -n "${ZSH_VERSION:-}" ]; then
+        if grep -q "direnv hook zsh" ~/.zshrc 2>/dev/null; then
+            echo "✓ direnv is integrated with zsh"
+        else
+            echo "⚠ Add this to your ~/.zshrc: eval \"\$(direnv hook zsh)\""
+        fi
+    fi
+
+    # Check for .envrc in current directory
+    if [ -f ".envrc" ]; then
+        echo "Found .envrc in current directory"
+
+        # Check if .envrc is allowed
+        if direnv status | grep -q "Found RC allowed true"; then
+            echo "✓ .envrc is allowed and active"
+        else
+            echo "⚠ .envrc found but not allowed"
+            echo "Run 'direnv allow' to enable it"
+        fi
+
+        # Show current environment status
+        echo "Current direnv status:"
+        direnv status
+    else
+        echo "No .envrc found in current directory"
+        echo "Create .envrc to set directory-specific environment variables"
+    fi
+
+    # Check configuration
+    CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/direnv"
+    if [ -f "$CONFIG_DIR/direnvrc" ]; then
+        echo "✓ Global direnv configuration found: $CONFIG_DIR/direnvrc"
+    else
+        echo "No global direnv configuration found"
+        echo "You can create $CONFIG_DIR/direnvrc for global settings"
+    fi
+
+    # Show some useful direnv commands
+    echo ""
+    echo "Useful direnv commands:"
+    echo "  direnv allow [DIR]     - Allow .envrc to be loaded"
+    echo "  direnv deny [DIR]      - Deny .envrc from being loaded"
+    echo "  direnv reload          - Reload current .envrc"
+    echo "  direnv edit [DIR]      - Edit .envrc file"
+    echo "  direnv status          - Show current status"
+
+    # Sample .envrc content
+    echo ""
+    echo "Sample .envrc content:"
+    echo "  export API_KEY=your-api-key"
+    echo "  export NODE_ENV=development"
+    echo "  PATH_add ./bin"
+    echo "  source_env ../.envrc   # Load parent .envrc"
+
+    echo "direnv update completed."
+else
+    echo "direnv not found, skipping direnv updates."
+    echo "To install direnv:"
+    echo "  Homebrew: brew install direnv"
+    echo "  Ubuntu: sudo apt install direnv"
+    echo "  Visit: https://direnv.net/docs/installation.html"
+fi

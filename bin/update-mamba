@@ -1,0 +1,68 @@
+#!/bin/sh
+set -euf
+
+# Mamba: Ultra-fast conda replacement
+#
+# Mamba is a reimplementation of the conda package manager in C++.
+# It provides faster dependency solving and package installation.
+#
+# This script updates Mamba itself and conda environments.
+#
+if command -v mamba >/dev/null 2>&1; then
+    echo "Updating Mamba and conda environments..."
+
+    # Update Mamba itself
+    echo "Updating Mamba..."
+    mamba update mamba --yes
+
+    # Update conda (if present) as Mamba can work alongside conda
+    if command -v conda >/dev/null 2>&1; then
+        echo "Updating conda base environment..."
+        mamba update conda --yes
+    fi
+
+    # Update base environment packages
+    echo "Updating base environment packages..."
+    mamba update --all --yes
+
+    # List all environments
+    echo "Available conda/mamba environments:"
+    mamba env list
+
+    # Update packages in all environments (optional, can be time-consuming)
+    echo "To update all environments, uncomment the following section:"
+    echo "# mamba env list | grep -v '^#' | awk '{print \$1}' | while read -r env; do"
+    echo "#   if [ \"\$env\" != \"base\" ] && [ -n \"\$env\" ]; then"
+    echo "#     echo \"Updating environment: \$env\""
+    echo "#     mamba update --name \"\$env\" --all --yes"
+    echo "#   fi"
+    echo "# done"
+
+    # Clean package cache to save disk space
+    echo "Cleaning package cache..."
+    mamba clean --all --yes
+
+    # Check for environment.yml in current directory
+    if [ -f "environment.yml" ] || [ -f "environment.yaml" ]; then
+        echo "Found environment file, updating current environment..."
+        mamba env update --file environment.yml 2>/dev/null || \
+        mamba env update --file environment.yaml 2>/dev/null || \
+        echo "Could not update from environment file"
+    fi
+
+    # Show current environment and version
+    echo "Current environment: $CONDA_DEFAULT_ENV"
+    echo "Mamba version: $(mamba --version)"
+
+    # Show disk usage
+    echo "Conda/Mamba disk usage:"
+    mamba clean --dry-run --all || echo "Could not calculate disk usage"
+
+    echo "Mamba update completed."
+    echo "Consider running 'mamba clean --all' periodically to save disk space"
+else
+    echo "Mamba not found, skipping Mamba updates."
+    echo "To install Mamba:"
+    echo "  conda install mamba -n base -c conda-forge"
+    echo "  Or install Mambaforge: https://github.com/conda-forge/miniforge#mambaforge"
+fi

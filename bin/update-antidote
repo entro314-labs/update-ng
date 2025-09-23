@@ -1,0 +1,50 @@
+#!/bin/sh
+set -euf
+
+# Antidote: Modern Zsh plugin manager
+#
+# Antidote is a Zsh plugin manager made from the ground up thinking about
+# performance. It can load plugins 10x faster than other plugin managers.
+#
+# This script updates Antidote itself and all managed Zsh plugins.
+#
+if command -v antidote >/dev/null 2>&1; then
+    echo "Updating Antidote and Zsh plugins..."
+
+    # Update Antidote itself
+    echo "Updating Antidote..."
+    antidote update
+
+    # Check if we're in a directory with .zsh_plugins.txt
+    if [ -f ".zsh_plugins.txt" ]; then
+        echo "Found .zsh_plugins.txt, updating plugins for this project..."
+        antidote bundle < .zsh_plugins.txt > .zsh_plugins.zsh
+    fi
+
+    # Check for global antidote configuration
+    if [ -f "$HOME/.zsh_plugins.txt" ]; then
+        echo "Found global .zsh_plugins.txt, updating global plugins..."
+        antidote bundle < "$HOME/.zsh_plugins.txt" > "$HOME/.zsh_plugins.zsh"
+    fi
+
+    # Alternative location check
+    if [ -f "${ZDOTDIR:-$HOME}/.zsh_plugins.txt" ]; then
+        echo "Found .zsh_plugins.txt in ZDOTDIR, updating plugins..."
+        antidote bundle < "${ZDOTDIR:-$HOME}/.zsh_plugins.txt" > "${ZDOTDIR:-$HOME}/.zsh_plugins.zsh"
+    fi
+
+    # Purge any unused plugins
+    echo "Purging unused plugins..."
+    antidote purge
+
+    # Show loaded plugins
+    echo "Currently loaded plugins:"
+    antidote list 2>/dev/null || echo "No plugins loaded or list command not available"
+
+    echo "Antidote update completed."
+    echo "Restart your shell or run 'source ~/.zshrc' to reload plugins"
+else
+    echo "Antidote not found, skipping Antidote updates."
+    echo "To install Antidote, run:"
+    echo "  git clone --depth=1 https://github.com/mattmc3/antidote.git \${ZDOTDIR:-\$HOME}/.antidote"
+fi

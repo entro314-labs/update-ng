@@ -1,0 +1,57 @@
+#!/bin/sh
+set -euf
+
+# Deno: Modern JavaScript and TypeScript runtime
+#
+# Deno is a simple, modern and secure runtime for JavaScript and TypeScript
+# that uses V8 and is built in Rust. It has built-in package management.
+#
+# This script updates Deno itself and can cache/update dependencies.
+#
+if command -v deno >/dev/null 2>&1; then
+    echo "Updating Deno and dependencies..."
+
+    # Update Deno itself to the latest version
+    echo "Updating Deno to latest version..."
+    deno upgrade
+
+    # If we're in a Deno project, update dependencies
+    if [ -f "deno.json" ] || [ -f "deno.jsonc" ] || [ -f "deps.ts" ]; then
+        echo "Found Deno project, updating dependencies..."
+
+        # Cache all dependencies (this effectively updates them)
+        if [ -f "deno.json" ] || [ -f "deno.jsonc" ]; then
+            echo "Caching dependencies from deno.json..."
+            deno cache --reload main.ts 2>/dev/null || \
+            deno cache --reload mod.ts 2>/dev/null || \
+            deno cache --reload index.ts 2>/dev/null || \
+            echo "No main entry point found, run 'deno cache --reload <your-main-file>' manually"
+        fi
+
+        if [ -f "deps.ts" ]; then
+            echo "Caching dependencies from deps.ts..."
+            deno cache --reload deps.ts
+        fi
+
+        # Update lock file if it exists
+        if [ -f "deno.lock" ]; then
+            echo "Updating lock file..."
+            deno cache --reload --lock-write main.ts 2>/dev/null || \
+            deno cache --reload --lock-write mod.ts 2>/dev/null || \
+            deno cache --reload --lock-write index.ts 2>/dev/null || \
+            echo "Lock file update may require manual intervention"
+        fi
+    else
+        echo "No Deno project files found in current directory"
+    fi
+
+    # Clean cache periodically to save space
+    echo "Current Deno version: $(deno --version | head -n1)"
+    echo "Cache location: $(deno info --json | grep -o '"modulesCache":"[^"]*' | cut -d'"' -f4 2>/dev/null || echo 'Unknown')"
+
+    echo "Deno update completed."
+    echo "Tip: Use 'deno cache --reload <file>' to update specific dependencies"
+else
+    echo "Deno not found, skipping Deno updates."
+    echo "To install Deno, visit: https://deno.land"
+fi

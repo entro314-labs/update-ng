@@ -1,0 +1,44 @@
+#!/bin/sh
+set -euf
+
+# Bun: Fast all-in-one JavaScript runtime and package manager
+#
+# Bun is a fast JavaScript runtime, bundler, test runner, and package manager.
+# This script updates Bun itself and packages in the current project.
+#
+if command -v bun >/dev/null 2>&1; then
+    echo "Updating Bun and JavaScript packages..."
+
+    # Update Bun itself to the latest version
+    bun upgrade
+
+    # If we're in a project with package.json, update dependencies
+    if [ -f "package.json" ]; then
+        echo "Found package.json, updating dependencies..."
+
+        # Install and update dependencies
+        bun install
+
+        # Update all dependencies to latest versions (if bun.lockb exists)
+        if [ -f "bun.lockb" ]; then
+            bun update
+        fi
+
+        # Clean cache to save space
+        echo "Cleaning Bun cache..."
+        bun pm cache rm
+
+    else
+        echo "No package.json found, skipping package updates."
+    fi
+
+    # Update globally installed packages
+    # Note: Bun doesn't have a built-in global update command yet,
+    # so we'll just report what's installed
+    echo "Checking globally installed Bun packages..."
+    bun pm ls --global 2>/dev/null || echo "No global packages or command not available."
+
+    echo "Bun update completed."
+else
+    echo "Bun not found, skipping Bun updates."
+fi

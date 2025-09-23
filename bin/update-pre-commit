@@ -1,0 +1,88 @@
+#!/bin/sh
+set -euf
+
+# pre-commit: Git hooks management
+#
+# pre-commit is a framework for managing and maintaining multi-language pre-commit hooks.
+# This script updates pre-commit and its hooks.
+#
+if command -v pre-commit >/dev/null 2>&1; then
+    echo "Updating pre-commit and hooks..."
+
+    # Show current pre-commit version
+    echo "Current pre-commit version: $(pre-commit --version)"
+
+    # Update pre-commit itself
+    echo "Updating pre-commit..."
+    if command -v pip >/dev/null 2>&1; then
+        pip install --upgrade pre-commit
+    elif command -v pip3 >/dev/null 2>&1; then
+        pip3 install --upgrade pre-commit
+    else
+        echo "pip not found. Update pre-commit using your package manager:"
+        echo "  Homebrew: brew upgrade pre-commit"
+        echo "  conda: conda update pre-commit"
+    fi
+
+    # Check if we're in a git repository with pre-commit config
+    if [ -f ".pre-commit-config.yaml" ] || [ -f ".pre-commit-config.yml" ]; then
+        echo "Found pre-commit configuration, updating hooks..."
+
+        # Update all hooks to latest versions
+        pre-commit autoupdate
+
+        # Install/update the git hook scripts
+        pre-commit install
+
+        # Clean up old environments
+        echo "Cleaning up old hook environments..."
+        pre-commit clean
+
+        # Run all hooks to ensure they work
+        echo "Testing all hooks..."
+        if pre-commit run --all-files; then
+            echo "✓ All pre-commit hooks passed"
+        else
+            echo "⚠ Some pre-commit hooks failed"
+            echo "Check the output above for details"
+        fi
+
+    else
+        echo "No pre-commit configuration found in current directory"
+        echo "To initialize pre-commit:"
+        echo "  1. Create .pre-commit-config.yaml"
+        echo "  2. Run 'pre-commit install'"
+        echo "  3. Visit https://pre-commit.com/hooks.html for available hooks"
+    fi
+
+    # Show installed hooks
+    echo "Installed pre-commit hooks:"
+    if [ -f ".pre-commit-config.yaml" ] || [ -f ".pre-commit-config.yml" ]; then
+        pre-commit run --all-files --dry-run | head -10 || echo "Could not list hooks"
+    fi
+
+    # Clean up cache periodically
+    echo "Pre-commit cache location: ~/.cache/pre-commit"
+    echo "To clean cache: pre-commit clean"
+
+    # Show sample configuration if no config exists
+    if [ ! -f ".pre-commit-config.yaml" ] && [ ! -f ".pre-commit-config.yml" ]; then
+        echo ""
+        echo "Sample .pre-commit-config.yaml:"
+        echo "repos:"
+        echo "  - repo: https://github.com/pre-commit/pre-commit-hooks"
+        echo "    rev: v4.4.0"
+        echo "    hooks:"
+        echo "      - id: trailing-whitespace"
+        echo "      - id: end-of-file-fixer"
+        echo "      - id: check-yaml"
+    fi
+
+    echo "pre-commit update completed."
+else
+    echo "pre-commit not found, skipping pre-commit updates."
+    echo "To install pre-commit:"
+    echo "  pip install pre-commit"
+    echo "  Or: brew install pre-commit"
+    echo "  Visit: https://pre-commit.com/"
+fi

@@ -1,0 +1,62 @@
+#!/bin/sh
+set -euf
+
+# GVM: Go Version Manager
+#
+# GVM provides an interface to manage multiple versions of Go.
+# This script updates GVM itself and can optionally update Go versions.
+#
+if command -v gvm >/dev/null 2>&1; then
+    echo "Updating GVM and Go versions..."
+
+    # Check if GVM is properly sourced and available
+    if ! gvm version >/dev/null 2>&1; then
+        echo "GVM found but not properly initialized."
+        echo "Make sure to source GVM in your shell profile:"
+        echo "  source ~/.gvm/scripts/gvm"
+        exit 0
+    fi
+
+    # Show current GVM version
+    echo "Current GVM version: $(gvm version)"
+
+    # Update GVM itself
+    echo "Updating GVM..."
+    # GVM doesn't have a built-in self-update, so provide guidance
+    echo "To update GVM itself:"
+    echo "  cd ~/.gvm && git pull origin master"
+    echo "  Or reinstall: bash < <(curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/binscripts/gvm-installer)"
+
+    # Show currently installed Go versions
+    echo "Currently installed Go versions:"
+    gvm list
+
+    # Show available Go versions (just the latest few to avoid spam)
+    echo "Latest available Go versions:"
+    gvm listall | tail -10 || echo "Could not fetch available versions"
+
+    # Check if there's a newer stable version available
+    CURRENT_GO=$(gvm list | grep '=>' | awk '{print $2}' || echo "none")
+    echo "Currently active Go version: $CURRENT_GO"
+
+    # Install latest stable Go if no version is active or if user wants to update
+    if [ "$CURRENT_GO" = "none" ] || [ "$CURRENT_GO" = "" ]; then
+        echo "No Go version currently active."
+        echo "To install and use latest Go:"
+        echo "  gvm install go1.21.0 --default"
+    else
+        echo "To update to latest Go version:"
+        echo "  gvm install go1.21.0"
+        echo "  gvm use go1.21.0 --default"
+    fi
+
+    # Clean up old Go versions to save space
+    echo "Tip: Clean up old Go versions with 'gvm uninstall <version>'"
+
+    echo "GVM update completed."
+    echo "Note: GVM requires shell restart or 'source ~/.gvm/scripts/gvm' after updates"
+else
+    echo "GVM not found, skipping GVM updates."
+    echo "To install GVM:"
+    echo "  bash < <(curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/binscripts/gvm-installer)"
+fi

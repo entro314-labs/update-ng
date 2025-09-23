@@ -1,0 +1,91 @@
+#!/bin/sh
+set -euf
+
+# Zsh: Z Shell updates
+#
+# Zsh is a shell designed for interactive use, although it is also a
+# powerful scripting language. This script helps update Zsh itself
+# and related configurations.
+#
+# This script provides guidance for updating Zsh via various package managers.
+#
+if command -v zsh >/dev/null 2>&1; then
+    echo "Updating Zsh and related components..."
+
+    # Show current Zsh version
+    echo "Current Zsh version: $(zsh --version)"
+
+    # Update Zsh via package managers
+    echo "To update Zsh itself, use your package manager:"
+
+    # macOS
+    if command -v brew >/dev/null 2>&1; then
+        echo "  Homebrew: brew upgrade zsh"
+    fi
+
+    if command -v port >/dev/null 2>&1; then
+        echo "  MacPorts: sudo port upgrade zsh"
+    fi
+
+    # Linux
+    if command -v apt-get >/dev/null 2>&1; then
+        echo "  Ubuntu/Debian: sudo apt update && sudo apt upgrade zsh"
+    fi
+
+    if command -v dnf >/dev/null 2>&1; then
+        echo "  Fedora: sudo dnf upgrade zsh"
+    fi
+
+    if command -v pacman >/dev/null 2>&1; then
+        echo "  Arch: sudo pacman -Syu zsh"
+    fi
+
+    if command -v zypper >/dev/null 2>&1; then
+        echo "  openSUSE: sudo zypper update zsh"
+    fi
+
+    # Update completion cache
+    echo "Rebuilding Zsh completion cache..."
+    if [ -n "${ZSH_COMPDUMP:-}" ] && [ -f "$ZSH_COMPDUMP" ]; then
+        rm -f "$ZSH_COMPDUMP"
+        echo "Removed completion dump: $ZSH_COMPDUMP"
+    fi
+
+    # Common completion cache locations
+    for comp_file in ~/.zcompdump* ~/.zcompdump; do
+        if [ -f "$comp_file" ]; then
+            rm -f "$comp_file"
+            echo "Removed completion cache: $comp_file"
+        fi
+    done
+
+    # Suggest recompiling .zshrc if it exists
+    if [ -f "$HOME/.zshrc" ]; then
+        echo "Recompiling .zshrc for better performance..."
+        zsh -c "zcompile $HOME/.zshrc" 2>/dev/null || echo "zcompile not available or .zshrc already compiled"
+    fi
+
+    # Update Oh My Zsh if present (this might be handled by update-oh-my-zsh)
+    if [ -d "$HOME/.oh-my-zsh" ]; then
+        echo "Oh My Zsh detected - use 'update-oh-my-zsh' for framework updates"
+    fi
+
+    # Check for common Zsh plugin managers and suggest updates
+    if command -v antidote >/dev/null 2>&1; then
+        echo "Antidote detected - use 'update-antidote' for plugin updates"
+    fi
+
+    if [ -f "$HOME/.zinit/zinit.zsh" ]; then
+        echo "Zinit detected - run 'zinit self-update && zinit update --all'"
+    fi
+
+    if [ -d "$HOME/.zprezto" ]; then
+        echo "Prezto detected - run 'zprezto-update'"
+    fi
+
+    echo "Zsh update guidance completed."
+    echo "Restart your shell to apply any changes: exec zsh"
+else
+    echo "Zsh not found, skipping Zsh updates."
+    echo "To install Zsh, use your system package manager"
+fi

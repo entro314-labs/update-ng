@@ -1,0 +1,30 @@
+#!/bin/sh
+set -euf
+
+# DNF package manager for Fedora Linux.
+#
+# DNF (Dandified YUM) is the package manager for Fedora and Red Hat Enterprise Linux.
+# This script performs a full system update including cleanup of obsolete packages.
+#
+if command -v dnf >/dev/null 2>&1; then
+    echo "Updating packages via DNF..."
+
+    # Clean package cache first
+    dnf --assumeyes clean all
+
+    # Remove orphaned packages
+    dnf --assumeyes autoremove
+
+    # Check for available updates
+    dnf check-update || true  # Don't fail if updates are available
+
+    # Perform the upgrade
+    dnf --assumeyes upgrade
+
+    # Remove any packages orphaned by the upgrade
+    dnf --assumeyes autoremove
+
+    echo "DNF update completed."
+else
+    echo "DNF not found, skipping DNF updates."
+fi

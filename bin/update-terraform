@@ -1,0 +1,91 @@
+#!/bin/sh
+set -euf
+
+# Terraform: Infrastructure as Code
+#
+# Terraform enables you to safely and predictably create, change, and improve infrastructure.
+# This script updates Terraform and related tools.
+#
+if command -v terraform >/dev/null 2>&1; then
+    echo "Updating Terraform and related tools..."
+
+    # Show current Terraform version
+    echo "Current Terraform version: $(terraform version | head -n1)"
+
+    # Terraform update method depends on installation method
+    echo "To update Terraform, use the method you used to install it:"
+
+    # Check common installation methods
+    if command -v brew >/dev/null 2>&1; then
+        echo "  Homebrew (macOS): brew upgrade terraform"
+    fi
+
+    if command -v tfenv >/dev/null 2>&1; then
+        echo "  tfenv detected - updating Terraform via tfenv..."
+        tfenv install latest
+        tfenv use latest
+    fi
+
+    echo "  Direct download: https://www.terraform.io/downloads"
+    echo "  Package managers: apt-get, yum, choco, etc."
+
+    # Update Terraform providers if in a Terraform directory
+    if [ -f "main.tf" ] || [ -f "*.tf" ] 2>/dev/null || [ -d ".terraform" ]; then
+        echo "Terraform configuration detected, updating providers..."
+
+        # Initialize and upgrade providers
+        terraform init -upgrade
+
+        echo "✓ Terraform providers updated"
+        echo "Consider running 'terraform plan' to check for changes"
+    else
+        echo "No Terraform configuration found in current directory"
+    fi
+
+    # Update related tools
+
+    # Terragrunt
+    if command -v terragrunt >/dev/null 2>&1; then
+        echo "Terragrunt detected: $(terragrunt --version)"
+        echo "To update Terragrunt:"
+        echo "  Homebrew: brew upgrade terragrunt"
+        echo "  Direct: Download from https://github.com/gruntwork-io/terragrunt/releases"
+    fi
+
+    # Terraform-docs
+    if command -v terraform-docs >/dev/null 2>&1; then
+        echo "terraform-docs detected: $(terraform-docs version)"
+        echo "To update terraform-docs:"
+        echo "  Homebrew: brew upgrade terraform-docs"
+    fi
+
+    # TFLint
+    if command -v tflint >/dev/null 2>&1; then
+        echo "TFLint detected: $(tflint --version)"
+        echo "To update TFLint:"
+        echo "  Homebrew: brew upgrade tflint"
+    fi
+
+    # Checkov
+    if command -v checkov >/dev/null 2>&1; then
+        echo "Checkov detected: $(checkov --version)"
+        echo "To update Checkov: pip install --upgrade checkov"
+    fi
+
+    # Show Terraform configuration
+    echo "Terraform workspace: $(terraform workspace show 2>/dev/null || echo 'Not in Terraform directory')"
+
+    # Check for .terraform-version file (tfenv)
+    if [ -f ".terraform-version" ]; then
+        REQUIRED_VERSION=$(cat .terraform-version)
+        echo "Required Terraform version (from .terraform-version): $REQUIRED_VERSION"
+    fi
+
+    echo "Terraform update completed."
+    echo "Run 'terraform plan' in your configuration directories to check for changes"
+else
+    echo "Terraform not found, skipping Terraform updates."
+    echo "To install Terraform:"
+    echo "  Visit: https://www.terraform.io/downloads"
+    echo "  Or use tfenv: https://github.com/tfutils/tfenv"
+fi

@@ -1,0 +1,80 @@
+#!/bin/sh
+set -euf
+
+# gcloud: Google Cloud CLI
+#
+# The Google Cloud CLI is a set of tools to create and manage Google Cloud
+# resources. This script updates gcloud and its components.
+#
+if command -v gcloud >/dev/null 2>&1; then
+    echo "Updating Google Cloud CLI and components..."
+
+    # Show current gcloud version
+    echo "Current gcloud version:"
+    gcloud --version | head -n1
+
+    # Update gcloud components
+    echo "Updating gcloud components..."
+    gcloud components update --quiet
+
+    # Install commonly used optional components if not already installed
+    echo "Checking for additional useful components..."
+
+    # Check and potentially install useful components
+    COMPONENTS_TO_CHECK="kubectl docker-credential-gcr alpha beta"
+
+    for component in $COMPONENTS_TO_CHECK; do
+        if ! gcloud components list --filter="id:$component AND state:Installed" --format="value(id)" | grep -q "$component"; then
+            echo "Optional component '$component' not installed"
+            echo "  To install: gcloud components install $component"
+        else
+            echo "✓ Component '$component' is installed"
+        fi
+    done
+
+    # Update kubectl if it's managed by gcloud
+    if gcloud components list --filter="id:kubectl AND state:Installed" --format="value(id)" | grep -q "kubectl"; then
+        echo "kubectl is managed by gcloud and was updated with components"
+    fi
+
+    # Check authentication status
+    echo "Checking authentication status..."
+    if gcloud auth list --filter="status:ACTIVE" --format="value(account)" | head -n1 >/dev/null 2>&1; then
+        ACTIVE_ACCOUNT=$(gcloud auth list --filter="status:ACTIVE" --format="value(account)" | head -n1)
+        echo "✓ Authenticated as: $ACTIVE_ACCOUNT"
+    else
+        echo "⚠ Not authenticated. Run 'gcloud auth login' to authenticate"
+    fi
+
+    # Show current project
+    CURRENT_PROJECT=$(gcloud config get-value project 2>/dev/null || echo "not set")
+    echo "Current project: $CURRENT_PROJECT"
+
+    # Show current region/zone if set
+    CURRENT_REGION=$(gcloud config get-value compute/region 2>/dev/null || echo "not set")
+    CURRENT_ZONE=$(gcloud config get-value compute/zone 2>/dev/null || echo "not set")
+    echo "Current region: $CURRENT_REGION"
+    echo "Current zone: $CURRENT_ZONE"
+
+    # Update Docker credential helper if installed
+    if command -v docker-credential-gcr >/dev/null 2>&1; then
+        echo "Configuring Docker credential helper..."
+        docker-credential-gcr configure-docker --quiet || echo "Docker credential helper configuration skipped"
+    fi
+
+    # Check for gsutil (usually comes with gcloud)
+    if command -v gsutil >/dev/null 2>&1; then
+        echo "✓ gsutil available: $(gsutil version -l | head -n1)"
+    fi
+
+    # Check for bq (BigQuery CLI)
+    if command -v bq >/dev/null 2>&1; then
+        echo "✓ bq (BigQuery) CLI available"
+    fi
+
+    echo "Google Cloud CLI update completed."
+    echo "Use 'gcloud components list' to see all available components"
+else
+    echo "Google Cloud CLI not found, skipping gcloud updates."
+    echo "To install gcloud, visit: https://cloud.google.com/sdk/docs/install"
+fi

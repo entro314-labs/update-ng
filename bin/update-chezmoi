@@ -1,0 +1,73 @@
+#!/bin/sh
+set -euf
+
+# Chezmoi: Dotfile management
+#
+# Chezmoi manages your dotfiles across multiple diverse machines, securely.
+# This script updates Chezmoi itself and applies any changes to your dotfiles.
+#
+if command -v chezmoi >/dev/null 2>&1; then
+    echo "Updating Chezmoi and dotfiles..."
+
+    # Update Chezmoi itself
+    echo "Updating Chezmoi..."
+    chezmoi upgrade
+
+    # Check if chezmoi is initialized
+    if ! chezmoi status >/dev/null 2>&1; then
+        echo "Chezmoi not initialized. Run 'chezmoi init' to get started."
+        exit 0
+    fi
+
+    # Pull latest changes from the source repository
+    echo "Pulling latest dotfile changes..."
+    chezmoi update
+
+    # Check the current status
+    echo "Checking dotfile status..."
+    STATUS=$(chezmoi status)
+    if [ -n "$STATUS" ]; then
+        echo "Pending changes:"
+        echo "$STATUS"
+        echo ""
+        echo "To apply changes: chezmoi apply"
+        echo "To see diff: chezmoi diff"
+    else
+        echo "✓ All dotfiles are up to date"
+    fi
+
+    # Verify dotfiles
+    echo "Verifying dotfiles..."
+    if chezmoi verify; then
+        echo "✓ All dotfiles verified successfully"
+    else
+        echo "⚠ Some dotfiles have verification issues"
+        echo "Run 'chezmoi diff' to see differences"
+    fi
+
+    # Show source directory and repository info
+    echo "Chezmoi source directory: $(chezmoi source-path)"
+
+    # Show data for templates
+    echo "Template data:"
+    chezmoi data || echo "No template data or error accessing data"
+
+    # Show managed files count
+    MANAGED_COUNT=$(chezmoi managed | wc -l)
+    echo "Managing $MANAGED_COUNT dotfiles"
+
+    # Check for external dependencies
+    if [ -f "$(chezmoi source-path)/.chezmoiexternal.toml" ]; then
+        echo "External dependencies found, updating..."
+        chezmoi apply --force
+    fi
+
+    echo "Chezmoi update completed."
+    echo "Use 'chezmoi status' to check for changes"
+    echo "Use 'chezmoi apply' to apply pending changes"
+else
+    echo "Chezmoi not found, skipping Chezmoi updates."
+    echo "To install Chezmoi:"
+    echo "  sh -c \"\$(curl -fsLS get.chezmoi.io)\""
+    echo "  Or visit: https://www.chezmoi.io/install/"
+fi

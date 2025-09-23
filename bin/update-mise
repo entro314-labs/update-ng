@@ -1,0 +1,50 @@
+#!/bin/sh
+set -euf
+
+# mise: Modern runtime version manager (successor to rtx)
+#
+# mise is a tool for managing multiple runtime versions like Node.js, Python, Ruby, etc.
+# It replaces tools like nvm, rbenv, pyenv, etc. with a single unified interface.
+#
+if command -v mise >/dev/null 2>&1; then
+    echo "Updating mise and managed runtimes..."
+
+    # Update mise itself to the latest version
+    mise self-update
+
+    # Update all plugins to their latest versions
+    echo "Updating mise plugins..."
+    mise plugins update
+
+    # Upgrade all installed tools to their latest versions within their major version constraints
+    echo "Upgrading installed tools..."
+    mise upgrade
+
+    # Clean up old versions and cache to save disk space
+    echo "Cleaning up old versions..."
+    mise prune --yes 2>/dev/null || echo "Cleanup completed or not needed."
+
+    # Optionally show what's currently installed
+    echo "Currently installed tools:"
+    mise list
+
+    echo "mise update completed."
+else
+    echo "mise not found, skipping mise updates."
+
+    # Check for the old rtx command as fallback
+    if command -v rtx >/dev/null 2>&1; then
+        echo "Found rtx (old name for mise), updating..."
+
+        # Update rtx itself
+        rtx self-update
+
+        # Update plugins
+        rtx plugins update
+
+        # Upgrade tools
+        rtx upgrade
+
+        echo "rtx update completed. Consider upgrading to mise (rtx was renamed to mise)."
+    fi
+fi

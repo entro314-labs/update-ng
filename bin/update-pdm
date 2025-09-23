@@ -1,0 +1,65 @@
+#!/bin/sh
+set -euf
+
+# PDM: Modern Python package manager
+#
+# PDM is a modern Python package and dependency manager supporting the latest PEP standards.
+# It installs and manages packages in a similar way to npm that doesn't need to create a virtualenv at all!
+#
+# This script updates PDM itself and project dependencies.
+#
+if command -v pdm >/dev/null 2>&1; then
+    echo "Updating PDM and Python projects..."
+
+    # Update PDM itself
+    echo "Updating PDM to latest version..."
+    pdm self update
+
+    # If we're in a PDM project, update dependencies
+    if [ -f "pyproject.toml" ] && [ -f "pdm.lock" ]; then
+        echo "Found PDM project, updating dependencies..."
+
+        # Update all dependencies to latest versions
+        pdm update
+
+        # Sync the working set with lock file
+        pdm sync --clean
+
+        # Remove unused packages
+        echo "Cleaning up unused packages..."
+        pdm remove --unused 2>/dev/null || echo "No unused packages to remove"
+
+    elif [ -f "pyproject.toml" ]; then
+        echo "Found pyproject.toml but no pdm.lock - initializing PDM project..."
+        echo "Run 'pdm install' to set up the project"
+    else
+        echo "No PDM project found in current directory"
+    fi
+
+    # Update global tools/packages if any are installed
+    echo "Checking global PDM packages..."
+    PDM_GLOBAL_LIST=$(pdm list --global 2>/dev/null || echo "")
+    if [ -n "$PDM_GLOBAL_LIST" ]; then
+        echo "Global packages found:"
+        echo "$PDM_GLOBAL_LIST"
+        echo "To update global packages manually:"
+        echo "  pdm install --global <package>@latest"
+    else
+        echo "No global PDM packages installed"
+    fi
+
+    # Show PDM configuration
+    echo "Current PDM version: $(pdm --version)"
+    echo "Python interpreter: $(pdm info --python 2>/dev/null || echo 'Not in PDM project')"
+
+    # Show cache info and clean if needed
+    echo "PDM cache location: $(pdm config cache_dir)"
+    echo "To clean PDM cache: pdm cache clear"
+
+    echo "PDM update completed."
+else
+    echo "PDM not found, skipping PDM updates."
+    echo "To install PDM:"
+    echo "  curl -sSL https://pdm-project.org/install-pdm.py | python3 -"
+    echo "  Or: pip install --user pdm"
+fi
