@@ -1,8 +1,73 @@
-# Update command
+# Update Command NG 🚀
 
-Want to update your computer software? The update-ng command can help you.
+Want to update your computer software? The **update-ng** command can help you!
 
-When you run `update` the command will run many software updates and upgrades.
+**Update Command NG** is a modern, fast system updater with a beautiful terminal interface that manages all your package managers, development tools, and system components.
+
+## ✨ Features
+
+- 🎨 **Beautiful TUI** - Gorgeous terminal interface with real-time progress
+- ⚡ **Parallel Execution** - Update multiple tools simultaneously
+- 🎯 **Smart Categorization** - Organized by system, language, cloud tools, etc.
+- 🔧 **Selective Updates** - Choose specific tools or categories
+- 📊 **Progress Tracking** - Real-time status with completion times
+- 🛡️ **Safe & Reliable** - Graceful handling of missing tools
+- 🚀 **Single Binary** - No dependencies, just download and run
+
+## 🚀 Quick Start
+
+### Option 1: Download Pre-built Binary (Recommended)
+```sh
+# macOS/Linux - download from releases
+curl -L https://github.com/entro314-labs/update/releases/latest/download/update-ng-$(uname -s)-$(uname -m) -o update-ng
+chmod +x update-ng
+sudo mv update-ng /usr/local/bin/
+```
+
+### Option 2: Build from Source
+```sh
+git clone https://github.com/entro314-labs/update.git
+cd update
+go build -o update-ng main.go
+```
+
+### Option 3: Legacy Shell Version
+```sh
+git clone https://github.com/entro314-labs/update.git ~/update
+export PATH="$PATH:~/update/bin"
+```
+
+## 🎮 Usage
+
+### Basic Usage
+```sh
+# Update everything with beautiful TUI
+update-ng
+
+# Update specific tools only
+update-ng --only brew,npm,docker
+
+# Skip certain tools
+update-ng --skip macports,conda
+
+# Run sequentially instead of parallel
+update-ng --parallel=false
+
+# Disable TUI for scripts/automation
+update-ng --tui=false
+```
+
+### Advanced Examples
+```sh
+# Update only Python ecosystem
+update-ng --only pip,conda,poetry,uv
+
+# Update only development tools
+update-ng --only git,gh,docker,kubectl
+
+# Quick system update
+update-ng --only brew,apt,dnf --parallel=true
+```
 
 * [`update`](bin/update): run all the update scripts.
 * [`update-apk`](bin/update-apm): update Alpine Package Keeper (APK) - for Alpine Linux.
