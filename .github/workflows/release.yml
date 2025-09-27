@@ -1,0 +1,67 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: 1.23
+
+    - name: Run tests
+      run: go test -v ./...
+
+    - name: Build binaries
+      run: |
+        # Linux amd64
+        GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o update-ng-Linux-x86_64 main.go
+
+        # Linux arm64
+        GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o update-ng-Linux-aarch64 main.go
+
+        # macOS amd64
+        GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o update-ng-Darwin-x86_64 main.go
+
+        # macOS arm64
+        GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o update-ng-Darwin-arm64 main.go
+
+        # Windows amd64
+        GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o update-ng-Windows-x86_64.exe main.go
+
+        # Windows arm64
+        GOOS=windows GOARCH=arm64 go build -ldflags="-s -w" -o update-ng-Windows-arm64.exe main.go
+
+    - name: Create checksums
+      run: |
+        sha256sum update-ng-* > checksums.txt
+
+    - name: Generate changelog
+      id: changelog
+      run: |
+        echo "## What's Changed" > changelog.md
+        git log $(git describe --tags --abbrev=0 HEAD^)..HEAD --pretty=format:"* %s" >> changelog.md
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          update-ng-*
+          checksums.txt
+        body_path: changelog.md
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

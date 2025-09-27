@@ -19,21 +19,21 @@ Want to update your computer software? The **update-ng** command can help you!
 ### Option 1: Download Pre-built Binary (Recommended)
 ```sh
 # macOS/Linux - download from releases
-curl -L https://github.com/entro314-labs/update/releases/latest/download/update-ng-$(uname -s)-$(uname -m) -o update-ng
+curl -L https://github.com/entro314-labs/update-ng/releases/latest/download/update-ng-$(uname -s)-$(uname -m) -o update-ng
 chmod +x update-ng
 sudo mv update-ng /usr/local/bin/
 ```
 
 ### Option 2: Build from Source
 ```sh
-git clone https://github.com/entro314-labs/update.git
-cd update
+git clone https://github.com/entro314-labs/update-ng.git
+cd update-ng
 go build -o update-ng main.go
 ```
 
 ### Option 3: Legacy Shell Version
 ```sh
-git clone https://github.com/entro314-labs/update.git ~/update
+git clone https://github.com/UpdateCommand/update.git ~/update
 export PATH="$PATH:~/update/bin"
 ```
 
@@ -240,9 +240,9 @@ For details, see the respective programs.
 
 ## Tracking
 
-* Package: UpdateCommand
-* Version: 8.4.0
-* Created: 2005-07-05
-* Updated: 2025-09-24T00:15:00Z
-* License: GPL-2.0-or-later or contact us for custom
-* Contact: Joel Parker Henderson (https://joelparkerhenderson.com)
+* Package: update-ng
+* Version: 1.0.0
+* Created: 2025-09-24
+* Updated: 2025-09-24T00:30:00Z
+* License: MIT
+* Contact: Dominikos Pritis (https://idominikos.com)
