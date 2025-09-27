@@ -88,50 +88,120 @@ var scriptCategories = map[string][]string{
 // getScriptDescriptions returns human-readable descriptions for each update script
 func getScriptDescriptions() map[string]string {
 	return map[string]string{
+		// System Package Managers
 		"update-apt":        "APT - Debian/Ubuntu package manager",
+		"update-apk":        "APK - Alpine Linux package manager",
 		"update-brew":       "Homebrew - macOS package manager",
-		"update-dnf":        "DNF - Red Hat/Fedora package manager",
-		"update-macports":   "MacPorts - macOS package manager",
-		"update-pacman":     "Pacman - Arch Linux package manager",
-		"update-zypper":     "Zypper - openSUSE package manager",
-		"update-winget":     "Windows Package Manager",
-		"update-snap":       "Snap - Universal Linux packages",
-		"update-asdf":       "ASDF - Multi-language version manager",
-		"update-fnm":        "Fast Node Manager - Node.js version manager",
-		"update-gvm":        "Go Version Manager",
-		"update-mise":       "Mise - Modern version manager for tools",
-		"update-volta":      "Volta - JavaScript tool manager",
-		"update-npm":        "NPM - Node.js package manager",
-		"update-pip":        "Pip - Python package installer",
-		"update-cargo":      "Cargo - Rust package manager",
-		"update-gem":        "RubyGems - Ruby package manager",
-		"update-conda":      "Conda - Data science package manager",
-		"update-mamba":      "Mamba - Fast conda-compatible package manager",
-		"update-poetry":     "Poetry - Python dependency manager",
-		"update-pdm":        "PDM - Modern Python package manager",
-		"update-rye":        "Rye - Experimental Python packaging tool",
-		"update-uv":         "UV - Ultra-fast Python package installer",
-		"update-yarn":       "Yarn - JavaScript package manager",
-		"update-bun":        "Bun - Fast JavaScript runtime and toolkit",
-		"update-deno":       "Deno - Secure JavaScript/TypeScript runtime",
-		"update-aws":        "AWS CLI - Amazon Web Services CLI",
-		"update-gcloud":     "Google Cloud SDK",
-		"update-kubectl":    "Kubectl - Kubernetes command-line tool",
-		"update-terraform":  "Terraform - Infrastructure as Code",
-		"update-docker":     "Docker - Container platform",
-		"update-podman":     "Podman - Alternative to Docker",
-		"update-gh":         "GitHub CLI",
-		"update-chezmoi":    "Chezmoi - Dotfiles manager",
-		"update-pre-commit": "Pre-commit - Git hooks framework",
-		"update-direnv":     "Direnv - Environment variable loader",
-		"update-zsh":        "Zsh shell updates",
-		"update-oh-my-zsh":  "Oh My Zsh - Zsh configuration framework",
-		"update-antidote":   "Antidote - Zsh plugin manager",
-		"update-rustup":     "Rustup - Rust toolchain installer",
-		"update-flatpak":    "Flatpak - Linux application distribution",
-		"update-mas":        "Mac App Store - macOS app updates",
 		"update-choco":      "Chocolatey - Windows package manager",
+		"update-dnf":        "DNF - Red Hat/Fedora package manager",
+		"update-emerge":     "Emerge - Gentoo package manager",
+		"update-eopkg":      "Eopkg - Solus package manager",
+		"update-freebsd":    "FreeBSD - FreeBSD system updates",
+		"update-guix":       "Guix - GNU Guix package manager",
+		"update-macports":   "MacPorts - macOS package manager",
+		"update-nix":        "Nix - NixOS package manager",
+		"update-opkg":       "OPKG - OpenWrt package manager",
+		"update-pacman":     "Pacman - Arch Linux package manager",
+		"update-pkg":        "PKG - FreeBSD package manager",
+		"update-pkg-add":    "PKG_ADD - OpenBSD package manager",
+		"update-prt-get":    "PRT-GET - CRUX package manager",
 		"update-scoop":      "Scoop - Windows command-line installer",
+		"update-slackpkg":   "Slackpkg - Slackware package manager",
+		"update-snap":       "Snap - Universal Linux packages",
+		"update-urpmi":      "URPMI - Mandriva/Mageia package manager",
+		"update-winget":     "Windows Package Manager",
+		"update-xbps":       "XBPS - Void Linux package manager",
+		"update-yay":        "YAY - Arch Linux AUR helper",
+		"update-yum":        "YUM - Red Hat/CentOS package manager",
+		"update-zypper":     "Zypper - openSUSE package manager",
+
+		// System Updates
+		"update-flatpak":       "Flatpak - Linux application distribution",
+		"update-mas":           "Mac App Store - macOS app updates",
+		"update-macos":         "macOS - System software updates",
+		"update-ubuntu-release": "Ubuntu Release - Ubuntu version upgrades",
+
+		// Version Managers
+		"update-asdf":   "ASDF - Multi-language version manager",
+		"update-fnm":    "Fast Node Manager - Node.js version manager",
+		"update-gvm":    "Go Version Manager",
+		"update-mise":   "Mise - Modern version manager for tools",
+		"update-rustup": "Rustup - Rust toolchain installer",
+		"update-volta":  "Volta - JavaScript tool manager",
+
+		// Language Package Managers - JavaScript/TypeScript
+		"update-bun":         "Bun - Fast JavaScript runtime and toolkit",
+		"update-deno":        "Deno - Secure JavaScript/TypeScript runtime",
+		"update-npm":         "NPM - Node.js package manager",
+		"update-npm-global":  "NPM Global - Global NPM packages",
+		"update-npm-n":       "NPM N - Node.js version manager via NPM",
+		"update-pnpm":        "PNPM - Fast, disk space efficient package manager",
+		"update-pnpm-global": "PNPM Global - Global PNPM packages",
+		"update-yarn":        "Yarn - JavaScript package manager",
+
+		// Language Package Managers - Python
+		"update-conda":  "Conda - Data science package manager",
+		"update-mamba":  "Mamba - Fast conda-compatible package manager",
+		"update-pdm":    "PDM - Modern Python package manager",
+		"update-pip":    "Pip - Python package installer",
+		"update-pipenv": "Pipenv - Python virtual environment manager",
+		"update-poetry": "Poetry - Python dependency manager",
+		"update-rye":    "Rye - Experimental Python packaging tool",
+		"update-uv":     "UV - Ultra-fast Python package installer",
+
+		// Language Package Managers - Rust
+		"update-cargo":                     "Cargo - Rust package manager",
+		"update-cargo-projects":            "Cargo Projects - Update multiple Cargo projects",
+		"update-cargo-project":             "Cargo Project - Update single Cargo project",
+		"update-cargo-project-manifests":   "Cargo Project Manifests - Update Cargo.toml files",
+
+		// Language Package Managers - Other
+		"update-apm":    "APM - Atom package manager",
+		"update-cabal":  "Cabal - Haskell package manager",
+		"update-gem":    "RubyGems - Ruby package manager",
+		"update-mix":    "Mix - Elixir build tool and package manager",
+		"update-swift":  "Swift - Swift package manager",
+
+		// Mobile Development
+		"update-carthage": "Carthage - iOS dependency manager",
+		"update-pod":      "CocoaPods - iOS dependency manager",
+
+		// Project Dependencies
+		"update-brewfile":             "Brewfile - Homebrew bundle dependencies",
+		"update-gemfile":              "Gemfile - Ruby bundle dependencies",
+		"update-playwright-via-pnpm": "Playwright via PNPM - Browser automation testing",
+		"update-podfile":              "Podfile - iOS CocoaPods dependencies",
+
+		// Cloud & Infrastructure
+		"update-aws":       "AWS CLI - Amazon Web Services CLI",
+		"update-az":        "Azure CLI - Microsoft Azure CLI",
+		"update-docker":    "Docker - Container platform",
+		"update-gcloud":    "Google Cloud SDK",
+		"update-helm":      "Helm - Kubernetes package manager",
+		"update-kubectl":   "Kubectl - Kubernetes command-line tool",
+		"update-podman":    "Podman - Alternative container engine to Docker",
+		"update-terraform": "Terraform - Infrastructure as Code",
+
+		// Development Tools
+		"update-chezmoi":    "Chezmoi - Dotfiles manager",
+		"update-direnv":     "Direnv - Environment variable loader",
+		"update-gh":         "GitHub CLI",
+		"update-pre-commit": "Pre-commit - Git hooks framework",
+
+		// Version Control
+		"update-git-pull":           "Git Pull - Update Git repositories",
+		"update-git-pull-manifests": "Git Pull Manifests - Update multiple Git repos",
+		"update-hg-pull":            "Mercurial Pull - Update Mercurial repositories",
+		"update-hg-pull-manifests":  "Mercurial Pull Manifests - Update multiple Mercurial repos",
+
+		// Shell & Environment
+		"update-antidote":   "Antidote - Zsh plugin manager",
+		"update-oh-my-zsh":  "Oh My Zsh - Zsh configuration framework",
+		"update-zsh":        "Zsh - Shell updates",
+
+		// Specialized Tools
+		"update-cards":  "Cards - Specialized update tool",
+		"update-motion": "Motion - Motion detection software updates",
 	}
 }
 

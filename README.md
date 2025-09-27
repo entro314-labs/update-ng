@@ -1,8 +1,6 @@
 # Update Command NG 🚀
 
-Want to update your computer software? The **update-ng** command can help you!
-
-**Update Command NG** is a modern, fast system updater with a beautiful terminal interface that manages all your package managers, development tools, and system components.
+**Update Command NG** is a modern, fast system updater written in Go that manages all your package managers, development tools, and system components through a beautiful terminal interface.
 
 ## ✨ Features
 
@@ -24,17 +22,12 @@ chmod +x update-ng
 sudo mv update-ng /usr/local/bin/
 ```
 
-### Option 2: Build from Source
+### Build from Source
+
 ```sh
 git clone https://github.com/entro314-labs/update-ng.git
 cd update-ng
 go build -o update-ng main.go
-```
-
-### Option 3: Legacy Shell Version
-```sh
-git clone https://github.com/UpdateCommand/update.git ~/update
-export PATH="$PATH:~/update/bin"
 ```
 
 ## 🎮 Usage
@@ -58,6 +51,7 @@ update-ng --tui=false
 ```
 
 ### Advanced Examples
+
 ```sh
 # Update only Python ecosystem
 update-ng --only pip,conda,poetry,uv
@@ -69,180 +63,211 @@ update-ng --only git,gh,docker,kubectl
 update-ng --only brew,apt,dnf --parallel=true
 ```
 
-* [`update`](bin/update): run all the update scripts.
-* [`update-apk`](bin/update-apm): update Alpine Package Keeper (APK) - for Alpine Linux.
-* [`update-apm`](bin/update-apm): update Atom Package Manager (APM) - for the GitHub Atom editor.
-* [`update-antidote`](bin/update-antidote): update Antidote Zsh plugin manager and plugins.
-* [`update-apt`](bin/update-apt): update apt-get - for Debian, Ubuntu, etc.
-* [`update-asdf`](bin/update-apm): update asdf - for managing multiple runtimes and languages.
-* [`update-aws`](bin/update-aws): update AWS CLI and related tools.
-* [`update-brew`](bin/update-brew): update Homebrew packages - for macOS.
-* [`update-brewfile`](bin/update-brewfile): update brew packages for macOS by using a Brewfile
-* [`update-bun`](bin/update-bun): update Bun JavaScript runtime and packages.
-* [`update-brew-cask`](bin/update-brew-cask): update Homebrew Cask packages - for macOS apps.
-* [`update-cabal`](bin/update-cabal): update Haskell Cabal pacakages.
-* [`update-cards`](bin/update-cards): update cards packages - for NuTyX Linux.
-* [`update-cargo`](bin/update-cargo): update Rust cargo package manager.
-* [`update-cargo-project`](bin/update-cargo-project): update one Rust cargo project.
-* [`update-cargo-project-manifests`](bin/update-cargo-project): update each Rust cargo project based on manifests.
-* [`update-cargo-projects`](bin/update-cargo-projects): update all Rust cargo projects in a given directory tree.
-* [`update-carthage`](bin/update-carthage): update Xcode Carthage pacakges - for macOS.
-* [`update-chezmoi`](bin/update-chezmoi): update Chezmoi dotfile manager and dotfiles.
-* [`update-choco`](bin/update-choco): update choco Chocolatey packages - for Windows.
-* [`update-conda`](bin/update-conda): update conda packages - for Python package manager.
-* [`update-deno`](bin/update-deno): update Deno JavaScript/TypeScript runtime and dependencies.
-* [`update-direnv`](bin/update-direnv): update direnv environment variable manager.
-* [`update-dnf`](bin/update-dnf): update DNF - for Fedora Linux.
-* [`update-docker`](bin/update-docker): update Docker containers and images.
-* [`update-emerge`](bin/update-emerge): update emerge - for Gentoo Linux.
-* [`update-eopkg`](bin/update-eopkg): update eopkg - for Solus Linux.
-* [`update-flatpak`](bin/update-flatpak): update flatpak - for many Linux distributions.
-* [`update-fnm`](bin/update-fnm): update Fast Node Manager (fnm) and Node.js versions.
-* [`update-gcloud`](bin/update-gcloud): update Google Cloud CLI and components.
-* [`update-gem`](bin/update-gem): update Ruby gems.
-* [`update-gemfile`](bin/update-gemfile): update gem packages for Ruby by using a Gemfile.
-* [`update-gh`](bin/update-gh): update GitHub CLI and extensions.
-* [`update-git-pull`](bin/update-git-pull): update git repositories.
-* [`update-guix`](bin/update-guix): update guix - for Guix System Linux.
-* [`update-gvm`](bin/update-gvm): update Go Version Manager (GVM) and Go versions.
-* [`update-helm`](bin/update-helm): update Helm charts.
-* [`update-hg-pull`](bin/update-hg-pull): update mercurial repositories.
-* [`update-kubectl`](bin/update-kubectl): update kubectl and Kubernetes tools.
-* [`update-macports`](bin/update-macports): update MacPorts packages - for macOS.
-* [`update-mamba`](bin/update-mamba): update Mamba (ultra-fast conda replacement).
-* [`update-mas`](bin/update-mas): update mas packages by using the Mac App Store.
-* [`update-mise`](bin/update-mise): update mise (modern runtime version manager).
-* [`update-mix`](bin/update-mix): update Ruby Motion - needs a valid paid license.
-* [`update-nix`](bin/update-nix): update nix-env for cross-platform and NixOS.
-* [`update-npm-global`](bin/update-npm-global): update Node Package Manager (NPM) via global settings.
-* [`update-npm-local`](bin/update-npm-global): update Node Package Manager (NPM) via local settings.
-* [`update-npm-n-stable`](bin/update-npm-global): update Node Package Manager (NPM) via `n` environment manager.
-* [`update-macos`](bin/update-macos): update the macOS Mac operating system - large downloads.
-* [`update-opkg`](bin/update-opkg): update opkg - for embedded Linux devices.
-* [`update-pacman`](bin/update-pacman): update pacman - for Arch Linux.
-* [`update-pdm`](bin/update-pdm): update PDM (modern Python package manager).
-* [`update-pip`](bin/update-pip): update Python PIP.
-* [`update-pipenv`](bin/update-pipenv): update Pipenv project dependencies.
-* [`update-playwright-via-pnpm`](bin/update-playwright-via-pnpm): update Playwright testing and dependencies via PNPM.
-* [`update-pnpm-global`](bin/update-pnpm-global): update Performant Node Package Manager (PNPM) via global settings.
-* [`update-pnpm-local`](bin/update-pnpm-global): update Performant Node Package Manager (PNPM) via local settings.
-* [`update-pod`](bin/update-pod): update Cocoapods for macOS
-* [`update-podfile`](bin/update-podfile): update Cocoapods packages for macOS by using a Podfile
-* [`update-podman`](bin/update-podman): update Podman containers and images.
-* [`update-poetry`](bin/update-poetry): update dependencies listed in pyproject.toml.
-* [`update-pre-commit`](bin/update-pre-commit): update pre-commit and Git hooks.
-* [`update-prt-get`](bin/update-nix): update prt-get - for CRUX Linux.
-* [`update-repos`](bin/update-repos): update Git repositories - customize this for your system.
-* [`update-rustup`](bin/update-rustup): update Rust programming language tooling.
-* [`update-rye`](bin/update-rye): update Rye Python project management tool.
-* [`update-scoop`](bin/update-scoop): update scoop for system-wide packages - for Windows.
-* [`update-slackpkg`](bin/update-slackpkg): update slackpkg - for Slack Linux.
-* [`update-snap`](bin/update-snap): update snap - for Canonical Linux Snap app containers.
-* [`update-swift`](bin/update-swift): update macOS Swift language - this merely prints advice.
-* [`update-terraform`](bin/update-terraform): update Terraform and infrastructure tools.
-* [`update-urpmi`](bin/update-urpmi): update urpmi system package manager for Mageia Linux.
-* [`update-ubuntu-release`](bin/update-ubuntu-release): update Ubuntu release - for major system upgrades.
-* [`update-uv`](bin/update-uv): update uv (ultra-fast Python package installer).
-* [`update-volta`](bin/update-volta): update Volta JavaScript tool manager.
-* [`update-winget`](bin/update-winget): update Windows Package Manager (winget).
-* [`update-xbps`](bin/update-xbsp): update xbps system package manager for Void Linux.
-* [`update-yay`](bin/update-yay): update Yay package manager - for Arch Linux
-* [`update-yarn`](bin/update-yarn): update Yarn JavaScript packages - for yarn upgrade.
-* [`update-zsh`](bin/update-zsh): update Zsh shell and related components.
-* [`update-zypper`](bin/update-zypper): update Zypper package manager - for openSUSE.
+## 🛠️ Supported Tools
 
-## Install
+Update Command NG automatically detects and updates the following categories of tools (80+ tools supported):
 
-Clone the repo to your own system, such as:
+### System Package Managers
+
+- **APT** (Debian/Ubuntu) - `update-apt`
+- **APK** (Alpine Linux) - `update-apk`
+- **Chocolatey** (Windows) - `update-choco`
+- **DNF** (Red Hat/Fedora) - `update-dnf`
+- **Emerge** (Gentoo) - `update-emerge`
+- **Eopkg** (Solus) - `update-eopkg`
+- **FreeBSD** - `update-freebsd`
+- **Guix** (GNU Guix) - `update-guix`
+- **Homebrew** (macOS) - `update-brew`
+- **MacPorts** (macOS) - `update-macports`
+- **Nix** (NixOS) - `update-nix`
+- **OPKG** (OpenWrt) - `update-opkg`
+- **Pacman** (Arch Linux) - `update-pacman`
+- **PKG** (FreeBSD) - `update-pkg`
+- **PKG_ADD** (OpenBSD) - `update-pkg-add`
+- **PRT-GET** (CRUX) - `update-prt-get`
+- **Scoop** (Windows) - `update-scoop`
+- **Slackpkg** (Slackware) - `update-slackpkg`
+- **Snap** (Universal Linux) - `update-snap`
+- **URPMI** (Mandriva/Mageia) - `update-urpmi`
+- **Winget** (Windows) - `update-winget`
+- **XBPS** (Void Linux) - `update-xbps`
+- **YAY** (Arch AUR helper) - `update-yay`
+- **YUM** (Red Hat/CentOS) - `update-yum`
+- **Zypper** (openSUSE) - `update-zypper`
+
+### System Updates
+
+- **Flatpak** (Linux applications) - `update-flatpak`
+- **Mac App Store** (macOS) - `update-mas`
+- **macOS System** - `update-macos`
+- **Ubuntu Release** - `update-ubuntu-release`
+
+### Version Managers
+
+- **ASDF** (Multi-language) - `update-asdf`
+- **FNM** (Node.js) - `update-fnm`
+- **GVM** (Go) - `update-gvm`
+- **Mise** (Modern tools) - `update-mise`
+- **Rustup** (Rust toolchain) - `update-rustup`
+- **Volta** (JavaScript) - `update-volta`
+
+### Language Package Managers
+
+#### JavaScript/TypeScript
+- **Bun** (Fast runtime & toolkit) - `update-bun`
+- **Deno** (Secure runtime) - `update-deno`
+- **NPM** (Node.js) - `update-npm`
+- **NPM Global** - `update-npm-global`
+- **NPM N** (Node version manager) - `update-npm-n`
+- **PNPM** (Fast package manager) - `update-pnpm`
+- **PNPM Global** - `update-pnpm-global`
+- **Yarn** (Package manager) - `update-yarn`
+
+#### Python
+- **Conda** (Data science) - `update-conda`
+- **Mamba** (Fast conda alternative) - `update-mamba`
+- **PDM** (Modern package manager) - `update-pdm`
+- **Pip** (Package installer) - `update-pip`
+- **Pipenv** (Virtual environments) - `update-pipenv`
+- **Poetry** (Dependency manager) - `update-poetry`
+- **Rye** (Experimental packaging) - `update-rye`
+- **UV** (Ultra-fast installer) - `update-uv`
+
+#### Rust
+- **Cargo** (Package manager) - `update-cargo`
+- **Cargo Projects** - `update-cargo-projects`
+- **Cargo Project** - `update-cargo-project`
+- **Cargo Project Manifests** - `update-cargo-project-manifests`
+
+#### Other Languages
+- **APM** (Atom packages) - `update-apm`
+- **Cabal** (Haskell) - `update-cabal`
+- **Gem** (Ruby) - `update-gem`
+- **Mix** (Elixir) - `update-mix`
+- **Swift** (Swift packages) - `update-swift`
+
+### Mobile Development
+
+- **Carthage** (iOS dependency manager) - `update-carthage`
+- **CocoaPods** (iOS) - `update-pod`
+
+### Project Dependencies
+
+- **Brewfile** (Homebrew bundle) - `update-brewfile`
+- **Gemfile** (Ruby bundle) - `update-gemfile`
+- **Playwright via PNPM** - `update-playwright-via-pnpm`
+- **Podfile** (iOS) - `update-podfile`
+
+### Cloud & Infrastructure
+
+- **AWS CLI** - `update-aws`
+- **Azure CLI** - `update-az`
+- **Docker** (Container platform) - `update-docker`
+- **Google Cloud SDK** - `update-gcloud`
+- **Helm** (Kubernetes package manager) - `update-helm`
+- **Kubectl** (Kubernetes CLI) - `update-kubectl`
+- **Podman** (Container alternative) - `update-podman`
+- **Terraform** (Infrastructure as Code) - `update-terraform`
+
+### Development Tools
+
+- **Chezmoi** (Dotfiles manager) - `update-chezmoi`
+- **Direnv** (Environment loader) - `update-direnv`
+- **GitHub CLI** - `update-gh`
+- **Pre-commit** (Git hooks) - `update-pre-commit`
+
+### Version Control
+
+- **Git Pull** (Repository updates) - `update-git-pull`
+- **Git Pull Manifests** - `update-git-pull-manifests`
+- **Mercurial Pull** - `update-hg-pull`
+- **Mercurial Pull Manifests** - `update-hg-pull-manifests`
+
+### Shell & Environment
+
+- **Antidote** (Zsh plugin manager) - `update-antidote`
+- **Oh My Zsh** (Zsh framework) - `update-oh-my-zsh`
+- **Zsh** (Shell updates) - `update-zsh`
+
+### Specialized Tools
+
+- **Cards** - `update-cards`
+- **Motion** - `update-motion`
+
+## 📦 Installation
+
+### Download Pre-built Binary (Recommended)
 
 ```sh
-git clone https://github.com/UpdateCommand/update.git ~/update
+# macOS/Linux - download from releases
+curl -L https://github.com/entro314-labs/update-ng/releases/latest/download/update-ng-$(uname -s)-$(uname -m) -o update-ng
+chmod +x update-ng
+sudo mv update-ng /usr/local/bin/
 ```
 
-Add the `bin` directory to your own path:
+### Build from Source
 
 ```sh
-export PATH="$PATH:~/update/bin"
+git clone https://github.com/entro314-labs/update-ng.git
+cd update-ng
+go build -o update-ng main.go
+sudo mv update-ng /usr/local/bin/
 ```
 
-Run the script:
+## ⚙️ Configuration
+
+Create a config file at `~/.config/update-ng/config.yaml`:
+
+```yaml
+# Default settings
+tui: true          # Show beautiful TUI interface
+parallel: true     # Run updates in parallel
+verbose: true      # Show detailed output
+log-file: ""       # Custom log file path
+
+# Default tools to skip
+skip:
+  - "conda"        # Skip conda if you prefer mamba
+  - "macports"     # Skip if you only use Homebrew
+
+# Default tools to run
+only: []           # Empty means run all available tools
+```
+
+## 🔄 Automation
+
+### Run Daily with Cron
 
 ```sh
-update
+# Add to your crontab
+echo "@daily /usr/local/bin/update-ng --tui=false" | crontab -
 ```
 
-## Design goals
-
-1. Use POSIX simple shell scripts that developers can customize.
-
-2. Make it easy for developers to help by doing merge requests.
-
-3. Quality is intended for typical developer boxen. YMMV.
-
-We welcome help, and new scripts, and constructive criticism.
-
-If you prefer something more powerful, we highly recommend you consider tools such as Nix and Ansible.
-
-
-## To run daily
-
-To run the update command daily, you can use the `crontab` command.
-
-To see if you have an existing `crontab` file, you can list it by running this:
+### Run Weekly with Verbose Output
 
 ```sh
-crontab -l > ~/.crontab
+# Add to your crontab for detailed logs
+echo "@weekly /usr/local/bin/update-ng --verbose=true --tui=false >> /var/log/update-ng.log 2>&1" | crontab -
 ```
 
-Edit the `~/.crontab` file.
+## 🎯 Design Goals
 
-Add a line that runs the `nice` command and use the full path to the `update` command:
+1. **Modern & Fast** - Built with Go for performance and reliability
+2. **Beautiful Interface** - Gorgeous TUI with real-time progress and colors
+3. **Smart Detection** - Automatically detects installed tools and skips missing ones
+4. **Parallel Execution** - Updates multiple tools simultaneously for speed
+5. **Developer Friendly** - Easy to extend and customize
 
-```crontab
-@daily /usr/bin/nice /foo/bar/update
-```
+## 🤝 Contributing
 
-Then install the file:
+We welcome contributions! To add support for a new tool:
 
-```sh
-crontab ~/.crontab
-```
+1. Create a new update script in the `bin/` directory
+2. Follow the naming convention: `update-toolname`
+3. Add the tool description in `main.go`
+4. Test with `update-ng --only toolname`
+5. Submit a pull request
 
-## Special options for package manager files
+## 📄 License
 
-Some of the update programs can read package manager files:
-
-* `update-brewfile` looks for a `Brewfile` for macOS Homebrew packages.
-
-* `update-gemfile` looks for a `Gemfile` for Ruby gem packages.
-
-* `update-podfile` looks for a `Podfile` for XCode Cocoapod pacakges.
-
-For details, see the respective programs.
-
-## Special options for project manifests
-
-Some of the update programs can read project manifests:
-
-* `update-cargo-crate` looks for `<config>/update-cargo-crate/manifests/*`
-
-* `update-git-pull` looks for `<config>/update-git-pull/manifests/*`
-
-* `update-hg-pull` looks for `<config>/update-hg-pull/manifests/*`
-
-Each manifest file is simply a list of local project directories.
-
-The program skips lines that are comments (begin with #) or blank.
-
-You can use as many manifest files and subdirectories as you like.
-
-For details, see the respective programs.
-
-## Tracking
-
-* Package: update-ng
-* Version: 1.0.0
-* Created: 2025-09-24
-* Updated: 2025-09-24T00:30:00Z
-* License: MIT
-* Contact: Dominikos Pritis (https://idominikos.com)
+MIT License - see LICENSE file for details.
