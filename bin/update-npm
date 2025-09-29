@@ -3,6 +3,9 @@ set -euf
 
 # NPM: Node Package Manager
 if command -v npm >/dev/null 2>&1; then
+    # Clear npm cache to prevent "idealTree" tracker conflicts
+    npm cache clean --force 2>/dev/null || true
+
     npm install npm
     npm update
     npm audit fix

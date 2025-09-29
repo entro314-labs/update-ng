@@ -4,6 +4,13 @@ set -euf
 # gem: Ruby package manager
 if command -v gem >/dev/null 2>&1; then
     dir=$(gem environment | sed -n 's/ * - INSTALLATION DIRECTORY: //p')
+
+    # Skip if this is a Homebrew-managed Ruby installation
+    if echo "$dir" | grep -q "/opt/homebrew\|/usr/local/Cellar"; then
+        echo "Skipping: Homebrew-managed Ruby gems should be updated via brew"
+        exit 0
+    fi
+
     if [ -w "$dir" ]; then
         gem cleanup
         gem install rubygems-update
@@ -11,5 +18,8 @@ if command -v gem >/dev/null 2>&1; then
         gem update --system
         yes | gem update
         gem cleanup
+    else
+        echo "Skipping: No write permission to gem directory: $dir"
+        exit 0
     fi
 fi
