@@ -61,7 +61,35 @@ update-ng --only git,gh,docker,kubectl
 
 # Quick system update
 update-ng --only brew,apt,dnf --parallel=true
+
+# Include Rust tools but exclude project scanning
+update-ng --only cargo --exclude cargo-projects,cargo-project,cargo-project-manifests
+
+# Skip all Rust project tools specifically
+update-ng --skip cargo-project
+
+# Exclude specific tools by exact name
+update-ng --exclude update-cargo-projects,update-mas
 ```
+
+### Filtering Options
+
+Update Command NG provides flexible filtering options to control which tools run:
+
+- **`--only`**: Include only tools matching these patterns (supports partial matching)
+- **`--skip`**: Skip tools matching these patterns (supports partial matching)
+- **`--exclude`**: Exclude specific tools by exact name (more precise than `--skip`)
+
+**Pattern Matching:**
+- Patterns work with or without the `update-` prefix
+- `--only cargo` matches `update-cargo`, `update-cargo-projects`, etc.
+- `--exclude cargo-projects` matches only `update-cargo-projects`
+- Multiple values supported: `--skip conda,macports`
+
+**Order of Operations:**
+1. Apply `--only` filter (if specified)
+2. Apply `--skip` filter (if specified)
+3. Apply `--exclude` filter (if specified)
 
 ## 🛠️ Supported Tools
 
@@ -200,7 +228,7 @@ Update Command NG automatically detects and updates the following categories of 
 
 ```sh
 # macOS/Linux - download from releases
-curl -L https://github.com/entro314-labs/update-ng/releases/latest/download/update-ng-$(uname -s)-$(uname -m) -o update-ng
+curl -L "https://github.com/entro314-labs/update-ng/releases/download/v1.0.0/update-ng-$(uname -s)-$(uname -m)" -o update-ng
 chmod +x update-ng
 sudo mv update-ng /usr/local/bin/
 ```

@@ -28,7 +28,7 @@ var scripts embed.FS
 
 const (
 	programCommand = "update-ng"
-	programVersion = "1.0.0"
+	programVersion = "1.0.1"
 	programUpdated = "2025-09-24T00:30:00Z"
 	programLicense = "MIT"
 	programContact = "Dominikos Pritis (https://idominikos.com)"
@@ -800,16 +800,37 @@ func runScript(scriptName string) tea.Cmd {
 		}
 
 		if err != nil {
-			// Check if it's a "not found" error (tool not installed)
-			if strings.Contains(outputStr, "not found") || strings.Contains(outputStr, "skipping") ||
-			   strings.Contains(outputStr, "command not found") || strings.Contains(outputStr, "No such file") {
-				logger.Warn("Script skipped", logFields...)
+			// Enhanced error categorization
+			if isToolNotAvailable(outputStr) {
+				logger.Warn("Script skipped - tool not available", logFields...)
 				return scriptFinishedMsg{
 					name:        scriptName,
 					status:      statusSkipped,
 					duration:    duration,
 					output:      outputStr,
 					description: "Tool not found or not installed",
+				}
+			}
+
+			if isExternallyManaged(outputStr) {
+				logger.Info("Script skipped - externally managed", logFields...)
+				return scriptFinishedMsg{
+					name:        scriptName,
+					status:      statusSkipped,
+					duration:    duration,
+					output:      outputStr,
+					description: "Tool managed by external package manager",
+				}
+			}
+
+			if isAlreadyUpToDate(outputStr) {
+				logger.Info("Script completed - already up to date", logFields...)
+				return scriptFinishedMsg{
+					name:        scriptName,
+					status:      statusSuccess,
+					duration:    duration,
+					output:      outputStr,
+					description: "Already up to date",
 				}
 			}
 			logFields = append(logFields, zap.Error(err))
@@ -835,7 +856,7 @@ func runScript(scriptName string) tea.Cmd {
 	})
 }
 
-func runWithTUI(scripts []string, parallel, verbose bool, categories []string) {
+func runScripts(scripts []string, parallel, verbose bool, categories []string) {
 	fmt.Println(titleStyle.Render("🚀 Update Command NG - Modern System Updater"))
 	if verbose {
 		fmt.Println(titleStyle.Render("(Verbose Mode)"))
@@ -863,6 +884,7 @@ func runWithTUI(scripts []string, parallel, verbose bool, categories []string) {
 	}
 
 	var wg sync.WaitGroup
+	var outputMutex sync.Mutex
 	resultsChan := make(chan scriptResult, len(scripts))
 
 	// Function to run a single script
@@ -872,6 +894,8 @@ func runWithTUI(scripts []string, parallel, verbose bool, categories []string) {
 		name := strings.TrimPrefix(scriptName, "update-")
 		description := scriptDescriptions[scriptName]
 
+		// Print starting message with mutex protection
+		outputMutex.Lock()
 		fmt.Printf("%s %s",
 			lipgloss.NewStyle().Foreground(lipgloss.Color("#FFA500")).Render("⟳"),
 			scriptStyle.Render(name))
@@ -879,10 +903,12 @@ func runWithTUI(scripts []string, parallel, verbose bool, categories []string) {
 			fmt.Printf(" - %s", infoStyle.Render(description))
 		}
 		fmt.Println(infoStyle.Render(" starting..."))
+		outputMutex.Unlock()
 
 		result := runScriptSync(scriptName, description)
 
-		// Print result immediately
+		// Print result immediately with mutex protection
+		outputMutex.Lock()
 		switch result.status {
 		case statusSuccess:
 			duration := result.duration.Round(100 * time.Millisecond)
@@ -963,6 +989,7 @@ func runWithTUI(scripts []string, parallel, verbose bool, categories []string) {
 			}
 			fmt.Println()
 		}
+		outputMutex.Unlock()
 
 		resultsChan <- result
 	}
@@ -1075,10 +1102,9 @@ func runScriptSync(scriptName, description string) scriptResult {
 	}
 
 	if err != nil {
-		// Check if it's a "not found" error (tool not installed)
-		if strings.Contains(outputStr, "not found") || strings.Contains(outputStr, "skipping") ||
-		   strings.Contains(outputStr, "command not found") || strings.Contains(outputStr, "No such file") {
-			logger.Warn("Script skipped", logFields...)
+		// Enhanced error categorization
+		if isToolNotAvailable(outputStr) {
+			logger.Warn("Script skipped - tool not available", logFields...)
 			return scriptResult{
 				name:        scriptName,
 				status:      statusSkipped,
@@ -1087,6 +1113,29 @@ func runScriptSync(scriptName, description string) scriptResult {
 				description: description,
 			}
 		}
+
+		if isExternallyManaged(outputStr) {
+			logger.Info("Script skipped - externally managed", logFields...)
+			return scriptResult{
+				name:        scriptName,
+				status:      statusSkipped,
+				duration:    duration,
+				output:      outputStr,
+				description: description,
+			}
+		}
+
+		if isAlreadyUpToDate(outputStr) {
+			logger.Info("Script completed - already up to date", logFields...)
+			return scriptResult{
+				name:        scriptName,
+				status:      statusSuccess,
+				duration:    duration,
+				output:      outputStr,
+				description: description,
+			}
+		}
+
 		logFields = append(logFields, zap.Error(err))
 		logger.Error("Script failed", logFields...)
 		return scriptResult{
@@ -1122,6 +1171,148 @@ func getAllScripts() ([]string, error) {
 		}
 	}
 	return scriptNames, nil
+}
+
+// filterScripts applies filtering logic to scripts based on only, skip, and exclude patterns
+func filterScripts(scripts []string, only, skip, exclude []string) []string {
+	var filtered []string
+
+	// Apply 'only' filter first (include only matching scripts)
+	if len(only) > 0 {
+		for _, script := range scripts {
+			for _, pattern := range only {
+				if matchesPattern(script, pattern) {
+					filtered = append(filtered, script)
+					break
+				}
+			}
+		}
+		scripts = filtered
+		filtered = nil
+	}
+
+	// Apply 'skip' filter (exclude matching scripts)
+	if len(skip) > 0 {
+		for _, script := range scripts {
+			shouldSkip := false
+			for _, pattern := range skip {
+				if matchesPattern(script, pattern) {
+					shouldSkip = true
+					break
+				}
+			}
+			if !shouldSkip {
+				filtered = append(filtered, script)
+			}
+		}
+		scripts = filtered
+		filtered = nil
+	}
+
+	// Apply 'exclude' filter (exact name exclusions)
+	if len(exclude) > 0 {
+		for _, script := range scripts {
+			shouldExclude := false
+			for _, exact := range exclude {
+				// Support both with and without 'update-' prefix
+				exactName := exact
+				if !strings.HasPrefix(exact, "update-") {
+					exactName = "update-" + exact
+				}
+				if script == exactName || script == exact {
+					shouldExclude = true
+					break
+				}
+			}
+			if !shouldExclude {
+				filtered = append(filtered, script)
+			}
+		}
+		scripts = filtered
+	}
+
+	return scripts
+}
+
+// matchesPattern checks if a script matches a pattern (supports both exact and partial matching)
+func matchesPattern(script, pattern string) bool {
+	// Support patterns both with and without 'update-' prefix
+	normalizedScript := script
+	normalizedPattern := pattern
+
+	// If pattern doesn't start with 'update-', also check against script without prefix
+	if !strings.HasPrefix(pattern, "update-") {
+		scriptWithoutPrefix := strings.TrimPrefix(script, "update-")
+		if strings.Contains(scriptWithoutPrefix, pattern) || scriptWithoutPrefix == pattern {
+			return true
+		}
+		// Also check with 'update-' prefix added to pattern
+		normalizedPattern = "update-" + pattern
+	}
+
+	// Exact match or contains check
+	return normalizedScript == normalizedPattern || strings.Contains(normalizedScript, normalizedPattern)
+}
+
+// isToolNotAvailable checks if the error indicates the tool is not installed
+func isToolNotAvailable(output string) bool {
+	notAvailablePatterns := []string{
+		"not found",
+		"command not found",
+		"No such file",
+		"skipping",
+		"which: no",
+		"executable file not found",
+		"is not recognized as an internal or external command",
+	}
+
+	lowerOutput := strings.ToLower(output)
+	for _, pattern := range notAvailablePatterns {
+		if strings.Contains(lowerOutput, strings.ToLower(pattern)) {
+			return true
+		}
+	}
+	return false
+}
+
+// isExternallyManaged checks if the tool is managed by external package manager
+func isExternallyManaged(output string) bool {
+	externallyManagedPatterns := []string{
+		"installed via a package manager",
+		"installed through an external package manager",
+		"self-update is not available",
+		"cannot update",
+		"managed externally",
+		"externally-managed-environment",
+	}
+
+	lowerOutput := strings.ToLower(output)
+	for _, pattern := range externallyManagedPatterns {
+		if strings.Contains(lowerOutput, strings.ToLower(pattern)) {
+			return true
+		}
+	}
+	return false
+}
+
+// isAlreadyUpToDate checks if the tool is already up to date
+func isAlreadyUpToDate(output string) bool {
+	upToDatePatterns := []string{
+		"requirement already satisfied",
+		"already up to date",
+		"already at the latest version",
+		"no updates available",
+		"nothing to update",
+		"already current",
+	}
+
+	lowerOutput := strings.ToLower(output)
+	for _, pattern := range upToDatePatterns {
+		if strings.Contains(lowerOutput, strings.ToLower(pattern)) {
+			return true
+		}
+	}
+	return false
 }
 
 func initConfig() {
@@ -1204,12 +1395,12 @@ with a beautiful terminal interface.`,
 			initLogger()
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			showTUI, _ := cmd.Flags().GetBool("tui")
 			parallel, _ := cmd.Flags().GetBool("parallel")
 			verbose, _ := cmd.Flags().GetBool("verbose")
 			categories, _ := cmd.Flags().GetStringSlice("categories")
 			only, _ := cmd.Flags().GetStringSlice("only")
 			skip, _ := cmd.Flags().GetStringSlice("skip")
+			exclude, _ := cmd.Flags().GetStringSlice("exclude")
 
 			// Bind flags to viper
 			viper.BindPFlag("tui", cmd.Flags().Lookup("tui"))
@@ -1217,16 +1408,17 @@ with a beautiful terminal interface.`,
 			viper.BindPFlag("verbose", cmd.Flags().Lookup("verbose"))
 			viper.BindPFlag("only", cmd.Flags().Lookup("only"))
 			viper.BindPFlag("skip", cmd.Flags().Lookup("skip"))
+			viper.BindPFlag("exclude", cmd.Flags().Lookup("exclude"))
 			viper.BindPFlag("categories", cmd.Flags().Lookup("categories"))
 			viper.BindPFlag("log-file", cmd.Flags().Lookup("log-file"))
 
 			// Get values from viper
-			showTUI = viper.GetBool("tui")
 			parallel = viper.GetBool("parallel")
 			verbose = viper.GetBool("verbose")
 			categories = viper.GetStringSlice("categories")
 			only = viper.GetStringSlice("only")
 			skip = viper.GetStringSlice("skip")
+			exclude = viper.GetStringSlice("exclude")
 
 			scripts, err := getAllScripts()
 			if err != nil {
@@ -1234,55 +1426,17 @@ with a beautiful terminal interface.`,
 			}
 
 			// Filter scripts based on flags
-			if len(only) > 0 {
-				var filtered []string
-				for _, script := range scripts {
-					for _, pattern := range only {
-						if strings.Contains(script, pattern) {
-							filtered = append(filtered, script)
-							break
-						}
-					}
-				}
-				scripts = filtered
-			}
-
-			if len(skip) > 0 {
-				var filtered []string
-				for _, script := range scripts {
-					shouldSkip := false
-					for _, pattern := range skip {
-						if strings.Contains(script, pattern) {
-							shouldSkip = true
-							break
-						}
-					}
-					if !shouldSkip {
-						filtered = append(filtered, script)
-					}
-				}
-				scripts = filtered
-			}
+			scripts = filterScripts(scripts, only, skip, exclude)
 
 			if len(scripts) == 0 {
 				fmt.Println("No scripts to run.")
 				return nil
 			}
 
-			if showTUI {
-				runWithTUI(scripts, parallel, verbose, categories)
-				return nil
-			} else {
-				// Simple text mode
-				fmt.Printf("Running %d update scripts...\n", len(scripts))
-				for _, script := range scripts {
-					fmt.Printf("Running %s...", script)
-					// Run script synchronously in text mode
-					// Implementation similar to runScript but synchronous
-					fmt.Println(" done")
-				}
-				return nil
-			}
+			// Both TUI and non-TUI modes use the same implementation
+			// The difference is just in the visual presentation
+			runScripts(scripts, parallel, verbose, categories)
+			return nil
 		},
 	}
 
@@ -1292,8 +1446,9 @@ with a beautiful terminal interface.`,
 	rootCmd.Flags().BoolP("tui", "t", true, "Show beautiful TUI interface")
 	rootCmd.Flags().BoolP("parallel", "p", true, "Run scripts in parallel")
 	rootCmd.Flags().BoolP("verbose", "v", true, "Show verbose output with detailed information")
-	rootCmd.Flags().StringSliceP("only", "o", []string{}, "Only run scripts matching these patterns")
-	rootCmd.Flags().StringSliceP("skip", "s", []string{}, "Skip scripts matching these patterns")
+	rootCmd.Flags().StringSliceP("only", "o", []string{}, "Only run scripts matching these patterns (supports exact names or partial matches)")
+	rootCmd.Flags().StringSliceP("skip", "s", []string{}, "Skip scripts matching these patterns (supports exact names or partial matches)")
+	rootCmd.Flags().StringSliceP("exclude", "e", []string{}, "Exclude specific scripts by exact name (e.g., 'update-cargo-projects')")
 	rootCmd.Flags().StringSliceP("categories", "c", []string{}, "Only run scripts from these categories")
 	rootCmd.Flags().String("log-file", "", "Path to log file (default is in user's config directory)")
 
