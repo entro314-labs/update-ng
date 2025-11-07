@@ -28,7 +28,7 @@ var scripts embed.FS
 
 const (
 	programCommand = "update-ng"
-	programVersion = "1.0.2"
+	programVersion = "1.0.4"
 	programUpdated = "2025-09-24T00:30:00Z"
 	programLicense = "MIT"
 	programContact = "Dominikos Pritis (https://idominikos.com)"

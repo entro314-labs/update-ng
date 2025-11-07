@@ -7,61 +7,63 @@ on:
 
 permissions:
   contents: write
+  packages: write
+  id-token: write
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v5
       with:
         fetch-depth: 0
 
+    - name: Fetch all tags
+      run: git fetch --force --tags
+
     - name: Set up Go
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@v6
       with:
-        go-version: 1.23
+        go-version: 1.25.4
+        cache: true
 
     - name: Run tests
       run: go test -v ./...
 
-    - name: Build binaries
-      run: |
-        # Linux amd64
-        GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o update-ng-Linux-x86_64 main.go
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
 
-        # Linux arm64
-        GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o update-ng-Linux-aarch64 main.go
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
 
-        # macOS amd64
-        GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o update-ng-Darwin-x86_64 main.go
-
-        # macOS arm64
-        GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o update-ng-Darwin-arm64 main.go
-
-        # Windows amd64
-        GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o update-ng-Windows-x86_64.exe main.go
-
-        # Windows arm64
-        GOOS=windows GOARCH=arm64 go build -ldflags="-s -w" -o update-ng-Windows-arm64.exe main.go
-
-    - name: Create checksums
-      run: |
-        sha256sum update-ng-* > checksums.txt
-
-    - name: Generate changelog
-      id: changelog
-      run: |
-        echo "## What's Changed" > changelog.md
-        git log $(git describe --tags --abbrev=0 HEAD^)..HEAD --pretty=format:"* %s" >> changelog.md
-
-    - name: Create Release
-      uses: softprops/action-gh-release@v2
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
       with:
-        files: |
-          update-ng-*
-          checksums.txt
-        body_path: changelog.md
-        draft: false
-        prerelease: false
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Import GPG key (optional)
+      id: import_gpg
+      uses: crazy-max/ghaction-import-gpg@v6
+      if: env.GPG_PRIVATE_KEY != ''
+      with:
+        gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+        passphrase: ${{ secrets.GPG_PASSPHRASE }}
+      env:
+        GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+
+    - name: Run GoReleaser
+      uses: goreleaser/goreleaser-action@v6
+      with:
+        distribution: goreleaser
+        version: latest
+        args: release --clean
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
+        AUR_SSH_PRIVATE_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+        WINGET_GITHUB_TOKEN: ${{ secrets.WINGET_GITHUB_TOKEN }}
+        NIX_GITHUB_TOKEN: ${{ secrets.NIX_GITHUB_TOKEN }}
+        GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}

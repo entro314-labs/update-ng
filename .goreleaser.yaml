@@ -1,0 +1,356 @@
+# GoReleaser configuration for update-ng
+# Documentation: https://goreleaser.com
+
+version: 2
+
+# Project metadata
+project_name: update-ng
+
+# Environment variables
+env:
+  - GO111MODULE=on
+
+# Before hooks - runs before the build
+before:
+  hooks:
+    - go mod tidy
+    - go mod verify
+    - go generate ./...
+
+# Build configuration
+builds:
+  - id: update-ng
+    main: ./main.go
+    binary: update-ng
+
+    # Embedding the bin directory
+    flags:
+      - -trimpath
+
+    ldflags:
+      - -s -w
+      - -X main.programVersion={{.Version}}
+      - -X main.programUpdated={{.Date}}
+
+    env:
+      - CGO_ENABLED=0
+
+    # Target platforms and architectures
+    goos:
+      - linux
+      - darwin
+      - windows
+      - freebsd
+      - openbsd
+      - netbsd
+
+    goarch:
+      - amd64
+      - arm64
+      - arm
+      - "386"
+
+    goarm:
+      - "6"
+      - "7"
+
+    # Platform-specific exclusions
+    ignore:
+      - goos: darwin
+        goarch: "386"
+      - goos: darwin
+        goarch: arm
+      - goos: windows
+        goarch: arm
+      - goos: freebsd
+        goarch: arm64
+      - goos: openbsd
+        goarch: arm64
+      - goos: netbsd
+        goarch: arm64
+
+# Universal macOS binary
+universal_binaries:
+  - id: update-ng-universal
+    name_template: update-ng
+    replace: true
+
+# Archives configuration
+archives:
+  - id: default
+    format: tar.gz
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+
+    # Windows gets .zip instead of .tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+
+    # Files to include in the archive
+    files:
+      - LICENSE
+      - README.md
+      - CHANGELOG.md
+      - bin/*
+
+# Checksums
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+# Snapshots (for non-tagged builds)
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+# Changelog configuration
+changelog:
+  use: github
+  sort: asc
+  abbrev: 0
+  groups:
+    - title: "✨ Features"
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: "🐛 Bug Fixes"
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: "📚 Documentation"
+      regexp: '^.*?docs(\([[:word:]]+\))??!?:.+$'
+      order: 2
+    - title: "🔧 Improvements"
+      regexp: '^.*?(refactor|perf|chore)(\([[:word:]]+\))??!?:.+$'
+      order: 3
+    - title: "Other Changes"
+      order: 999
+  filters:
+    exclude:
+      - "^test:"
+      - "^ci:"
+      - "^build\\(deps\\):"
+      - "Merge pull request"
+      - "Merge branch"
+
+# Release configuration
+release:
+  github:
+    owner: entro314-labs
+    name: update-ng
+
+  draft: false
+  prerelease: auto
+  mode: replace
+
+  header: |
+    ## 🚀 Update Command NG {{ .Tag }}
+
+    A modern, fast system updater that manages all your package managers, development tools, and system components with a beautiful terminal interface.
+
+  footer: |
+    ---
+
+    ## Installation
+
+    ### Homebrew (macOS/Linux)
+    ```sh
+    brew install entro314-labs/tap/update-ng
+    ```
+
+    ### AUR (Arch Linux)
+    ```sh
+    yay -S update-ng-bin
+    ```
+
+    ### Winget (Windows)
+    ```sh
+    winget install entro314-labs.update-ng
+    ```
+
+    ### Manual Installation
+    Download the appropriate binary for your platform from the assets below.
+
+    **Full Changelog**: https://github.com/entro314-labs/update-ng/compare/{{ .PreviousTag }}...{{ .Tag }}
+
+# Homebrew tap
+brews:
+  - repository:
+      owner: entro314-labs
+      name: homebrew-tap
+      branch: main
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+
+    # Formula metadata
+    name: update-ng
+    homepage: https://github.com/entro314-labs/update-ng
+    description: "Modern system updater with beautiful TUI"
+    license: MIT
+
+    # Folder to put the formula
+    directory: Formula
+
+    # Dependencies
+    dependencies: []
+
+    # Install configuration
+    install: |
+      bin.install "update-ng"
+
+      # Install shell completions
+      generate_completions_from_executable(bin/"update-ng", "completion")
+
+    # Test
+    test: |
+      system "#{bin}/update-ng", "version"
+
+    # Caveats shown after installation
+    caveats: |
+      To run update-ng daily automatically:
+        echo "@daily /usr/local/bin/update-ng --tui=false" | crontab -
+
+# AUR package
+aurs:
+  - name: update-ng-bin
+    homepage: https://github.com/entro314-labs/update-ng
+    description: "Modern system updater with beautiful TUI (binary release)"
+    maintainers:
+      - "Dominikos Pritis <dominikos at idominikos dot com>"
+    contributors:
+      - "Dominikos Pritis <dominikos at idominikos dot com>"
+    license: MIT
+    private_key: "{{ .Env.AUR_SSH_PRIVATE_KEY }}"
+    git_url: "ssh://aur@aur.archlinux.org/update-ng-bin.git"
+    package: |
+      # bin
+      install -Dm755 "./update-ng" "${pkgdir}/usr/bin/update-ng"
+
+      # license
+      install -Dm644 "./LICENSE" "${pkgdir}/usr/share/licenses/update-ng/LICENSE"
+
+      # documentation
+      install -Dm644 "./README.md" "${pkgdir}/usr/share/doc/update-ng/README.md"
+
+# Winget configuration
+winget:
+  - name: update-ng
+    publisher: entro314-labs
+    short_description: "Modern system updater with beautiful TUI"
+    license: MIT
+    homepage: https://github.com/entro314-labs/update-ng
+    publisher_url: https://github.com/entro314-labs
+    publisher_support_url: https://github.com/entro314-labs/update-ng/issues
+    package_identifier: entro314-labs.update-ng
+
+    # Repository for winget manifests
+    repository:
+      owner: entro314-labs
+      name: winget-pkgs
+      branch: main
+      token: "{{ .Env.WINGET_GITHUB_TOKEN }}"
+
+    # Path in the repository
+    path: manifests/e/entro314-labs/update-ng
+
+    tags:
+      - cli
+      - updater
+      - package-manager
+      - system-tools
+      - developer-tools
+
+# Nix packages
+nix:
+  - name: update-ng
+    repository:
+      owner: entro314-labs
+      name: nur-packages
+      branch: main
+      token: "{{ .Env.NIX_GITHUB_TOKEN }}"
+    homepage: https://github.com/entro314-labs/update-ng
+    description: "Modern system updater with beautiful TUI"
+    license: mit
+    path: pkgs/update-ng/default.nix
+
+# Source archive
+source:
+  enabled: true
+  name_template: "{{ .ProjectName }}_{{ .Version }}_source"
+  format: tar.gz
+
+# Announce (optional - for publishing to social media, Discord, etc.)
+announce:
+  skip: "{{gt .Patch 0}}" # Skip announcements for patch releases
+
+# SBOMs (Software Bill of Materials)
+sboms:
+  - id: archive
+    artifacts: archive
+  - id: source
+    artifacts: source
+
+# Signs the checksums file
+signs:
+  - cmd: gpg
+    args:
+      - "--batch"
+      - "--local-user"
+      - "{{ .Env.GPG_FINGERPRINT }}"
+      - "--output"
+      - "${signature}"
+      - "--detach-sign"
+      - "${artifact}"
+    artifacts: checksum
+    output: true
+
+# Docker images (optional)
+dockers:
+  - image_templates:
+      - "ghcr.io/entro314-labs/update-ng:{{ .Version }}-amd64"
+      - "ghcr.io/entro314-labs/update-ng:latest-amd64"
+    use: buildx
+    goos: linux
+    goarch: amd64
+    build_flag_templates:
+      - "--platform=linux/amd64"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source={{.GitURL}}"
+    dockerfile: Dockerfile
+
+  - image_templates:
+      - "ghcr.io/entro314-labs/update-ng:{{ .Version }}-arm64"
+      - "ghcr.io/entro314-labs/update-ng:latest-arm64"
+    use: buildx
+    goos: linux
+    goarch: arm64
+    build_flag_templates:
+      - "--platform=linux/arm64"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source={{.GitURL}}"
+    dockerfile: Dockerfile
+
+# Docker manifest for multi-arch images
+docker_manifests:
+  - name_template: "ghcr.io/entro314-labs/update-ng:{{ .Version }}"
+    image_templates:
+      - "ghcr.io/entro314-labs/update-ng:{{ .Version }}-amd64"
+      - "ghcr.io/entro314-labs/update-ng:{{ .Version }}-arm64"
+
+  - name_template: "ghcr.io/entro314-labs/update-ng:latest"
+    image_templates:
+      - "ghcr.io/entro314-labs/update-ng:latest-amd64"
+      - "ghcr.io/entro314-labs/update-ng:latest-arm64"
+
+# Metadata
+metadata:
+  mod_timestamp: "{{ .CommitTimestamp }}"

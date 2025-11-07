@@ -1,1 +1,38 @@
+# Binary
 update-ng
+
+# GoReleaser
+dist/
+*.snap
+
+# Test binaries
+*.test
+
+# Coverage
+*.out
+coverage.txt
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# GPG keys (important!)
+*.key
+*.asc
+*.gpg
+docs/GORELEASER_INFRASTRUCTURE.md
+docs/GORELEASER_QUICK_START.md
+docs/RELEASE_SETUP.md
+scripts/test-release.sh

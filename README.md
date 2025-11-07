@@ -14,16 +14,37 @@
 
 ## 🚀 Quick Start
 
-### Option 1: Download Pre-built Binary (Recommended)
+### Homebrew (macOS/Linux)
+```sh
+brew install entro314-labs/tap/update-ng
+```
+
+### AUR (Arch Linux)
+```sh
+yay -S update-ng-bin
+# or
+paru -S update-ng-bin
+```
+
+### Winget (Windows)
+```sh
+winget install entro314-labs.update-ng
+```
+
+### Docker
+```sh
+docker pull ghcr.io/entro314-labs/update-ng:latest
+docker run --rm ghcr.io/entro314-labs/update-ng:latest
+```
+
+### Download Pre-built Binary
 ```sh
 # macOS/Linux - download from releases
-curl -L https://github.com/entro314-labs/update-ng/releases/latest/download/update-ng-$(uname -s)-$(uname -m) -o update-ng
-chmod +x update-ng
+curl -L https://github.com/entro314-labs/update-ng/releases/latest/download/update-ng_$(uname -s)_$(uname -m).tar.gz | tar xz
 sudo mv update-ng /usr/local/bin/
 ```
 
 ### Build from Source
-
 ```sh
 git clone https://github.com/entro314-labs/update-ng.git
 cd update-ng
@@ -224,13 +245,53 @@ Update Command NG automatically detects and updates the following categories of 
 
 ## 📦 Installation
 
-### Download Pre-built Binary (Recommended)
+### Package Managers
+
+#### Homebrew (macOS/Linux)
+```sh
+brew tap entro314-labs/tap
+brew install update-ng
+```
+
+#### AUR (Arch Linux)
+```sh
+# Using yay
+yay -S update-ng-bin
+
+# Using paru
+paru -S update-ng-bin
+```
+
+#### Winget (Windows)
+```sh
+winget install entro314-labs.update-ng
+```
+
+#### Docker
+```sh
+# Pull the image
+docker pull ghcr.io/entro314-labs/update-ng:latest
+
+# Run update-ng
+docker run --rm ghcr.io/entro314-labs/update-ng:latest
+
+# With volume mount for config
+docker run --rm -v ~/.config/update-ng:/root/.config/update-ng \
+  ghcr.io/entro314-labs/update-ng:latest
+```
+
+### Download Pre-built Binary
+
+Pre-built binaries are available for Linux, macOS, Windows, and BSD variants in multiple architectures (amd64, arm64, arm, 386).
 
 ```sh
-# macOS/Linux - download from releases
-curl -L "https://github.com/entro314-labs/update-ng/releases/download/v1.0.0/update-ng-$(uname -s)-$(uname -m)" -o update-ng
-chmod +x update-ng
+# Linux/macOS - download and extract
+curl -L https://github.com/entro314-labs/update-ng/releases/latest/download/update-ng_$(uname -s)_$(uname -m).tar.gz | tar xz
 sudo mv update-ng /usr/local/bin/
+
+# Windows (PowerShell)
+irm https://github.com/entro314-labs/update-ng/releases/latest/download/update-ng_Windows_x86_64.zip -OutFile update-ng.zip
+Expand-Archive update-ng.zip -DestinationPath .
 ```
 
 ### Build from Source
@@ -296,6 +357,45 @@ We welcome contributions! To add support for a new tool:
 4. Test with `update-ng --only toolname`
 5. Submit a pull request
 
+### Development
+
+```sh
+# Clone the repository
+git clone https://github.com/entro314-labs/update-ng.git
+cd update-ng
+
+# Install dependencies
+go mod download
+
+# Build
+go build -o update-ng main.go
+
+# Test
+go test -v ./...
+
+# Test with GoReleaser (snapshot build)
+goreleaser release --snapshot --clean --skip=publish
+```
+
+## 🚀 Release Process
+
+This project uses [GoReleaser](https://goreleaser.com/) for automated releases. When a new tag is pushed:
+
+- ✅ Multi-platform binaries are built (Linux, macOS, Windows, BSD)
+- ✅ Homebrew formula is updated automatically
+- ✅ AUR package is published
+- ✅ Winget manifest is updated
+- ✅ Docker images are built and published to GHCR
+- ✅ GitHub release is created with changelog
+
+For maintainers: See [docs/RELEASE_SETUP.md](docs/RELEASE_SETUP.md) for complete release infrastructure setup.
+
+## 📚 Documentation
+
+- [Release Setup Guide](docs/RELEASE_SETUP.md) - How to set up the release infrastructure
+- [GoReleaser Quick Start](docs/GORELEASER_QUICK_START.md) - Quick reference for common tasks
+- [CHANGELOG.md](CHANGELOG.md) - Project changelog
+
 ## 📄 License
 
-MIT License - see LICENSE file for details.
+MIT License - see [LICENSE](LICENSE) file for details.
