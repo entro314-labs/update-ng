@@ -3,7 +3,9 @@ set -euf
 
 # PNPM: Performant Node Package Manager
 if command -v pnpm >/dev/null 2>&1; then
-    if [ -r "package.json" ]; then
+    pnpm self-update 2>/dev/null || true
+
+    if [ -r "pnpm-lock.yaml" ]; then
         pnpm update
     fi
 fi

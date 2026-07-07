@@ -75,19 +75,19 @@ if [ "$(id -u)" -ne 0 ]; then
 
             brew outdated | 
             while read -r x; do
-                brew reinstall $arg_verbose $arg_debug --force "$x" || true
+                brew reinstall $arg_verbose $arg_debug --force "$x"
             done
 
             brew outdated --cask | 
             while read -r x; do
-                brew reinstall $arg_verbose $arg_debug --force "$x" || true
+                brew reinstall $arg_verbose $arg_debug --force "$x"
             done
 
             brew outdated --cask --greedy --verbose |
             grep -v '(latest)' |
             awk '{print $1}' |
             while read -r x; do
-                brew reinstall $arg_verbose $arg_debug --force "$x" || true
+                brew reinstall $arg_verbose $arg_debug --force "$x"
             done
 
             # Cleanup to make space and mitigate stale formulas

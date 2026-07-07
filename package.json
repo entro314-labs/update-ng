@@ -1,0 +1,8 @@
+{
+  "name": "update-ng",
+  "private": true,
+  "packageManager": "pnpm@11.10.0",
+  "dependencies": {
+    "npm": "^11.18.0"
+  }
+}

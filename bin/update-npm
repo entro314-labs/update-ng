@@ -6,11 +6,14 @@ if command -v npm >/dev/null 2>&1; then
     # Clear npm cache to prevent "idealTree" tracker conflicts
     npm cache clean --force 2>/dev/null || true
 
-    npm install npm
-    npm update
-    npm audit fix
-    # Via npm-check-updates
-    if npm list npm-check-updates >/dev/null 2>&1; then
-        npm exec npm-check-updates --upgrade
+    npm install -g npm 2>/dev/null || npm install npm
+
+    if [ -r "package-lock.json" ] && [ ! -r "pnpm-lock.yaml" ] && [ ! -r "yarn.lock" ] && [ ! -r "bun.lockb" ] && [ ! -r "bun.lock" ]; then
+        npm update
+        npm audit fix
+        # Via npm-check-updates
+        if npm list npm-check-updates >/dev/null 2>&1; then
+            npm exec npm-check-updates --upgrade
+        fi
     fi
 fi

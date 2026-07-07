@@ -12,8 +12,8 @@ if command -v bun >/dev/null 2>&1; then
     # Update Bun itself to the latest version
     bun upgrade
 
-    # If we're in a project with package.json, update dependencies
-    if [ -f "package.json" ]; then
+    # If we're in a Bun-managed project, update dependencies
+    if [ -f "package.json" ] && { [ -f "bun.lockb" ] || [ -f "bun.lock" ]; } && [ ! -f "pnpm-lock.yaml" ]; then
         echo "Found package.json, updating dependencies..."
 
         # Install and update dependencies
@@ -29,7 +29,7 @@ if command -v bun >/dev/null 2>&1; then
         bun pm cache rm
 
     else
-        echo "No package.json found, skipping package updates."
+        echo "No Bun-managed package.json found, skipping package updates."
     fi
 
     # Update globally installed packages

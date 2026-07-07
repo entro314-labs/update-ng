@@ -54,14 +54,23 @@ set -euf
 #   package conflict.
 #
 if command -v apt-get >/dev/null 2>&1; then
-    apt-get --quiet --yes autoclean
-    apt-get --quiet --yes --purge autoremove
-    apt-get --quiet --yes update
-    apt-get --quiet --yes install update-manager
-    apt-get --quiet --yes install update-manager-core
-    apt-get --quiet --yes upgrade --fix-broken --fix-missing
-    apt-get --quiet --yes dist-upgrade --fix-broken --fix-missing
-    apt-get --quiet --yes full-upgrade --fix-broken --fix-missing
-    apt-get --quiet --yes autoclean
-    apt-get --quiet --yes --purge autoremove
+    # Define a wrapper to handle sudo if needed
+    run_apt() {
+        if [ "$(id -u)" -ne 0 ]; then
+            sudo apt-get "$@"
+        else
+            apt-get "$@"
+        fi
+    }
+
+    run_apt --quiet --yes autoclean
+    run_apt --quiet --yes --purge autoremove
+    run_apt --quiet --yes update
+    # update-manager might not be needed on servers, but keeping typical flow
+    run_apt --quiet --yes install update-manager update-manager-core || true
+    run_apt --quiet --yes upgrade --fix-broken --fix-missing
+    run_apt --quiet --yes dist-upgrade --fix-broken --fix-missing
+    run_apt --quiet --yes full-upgrade --fix-broken --fix-missing
+    run_apt --quiet --yes autoclean
+    run_apt --quiet --yes --purge autoremove
 fi
