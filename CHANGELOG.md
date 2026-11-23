@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GPG signing support for releases
 - SBOM (Software Bill of Materials) generation
 
+### Changed
+- Built with Go 1.27.4; Go modules updated to their latest releases
+- Bundled `npm` dependency updated to 12.x; package manager pinned to pnpm 12.23.0
+
 ## [1.0.3] - 2025-09-24
 
 ### Changed
