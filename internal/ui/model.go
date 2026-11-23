@@ -52,10 +52,6 @@ var (
 			Bold(true).
 			Underline(true)
 
-	subHeaderStyle = lipgloss.NewStyle().
-			Foreground(cyan).
-			Bold(true)
-
 	// Status styles
 	successStyle = lipgloss.NewStyle().
 			Foreground(green).
@@ -68,9 +64,6 @@ var (
 	runningStyle = lipgloss.NewStyle().
 			Foreground(orange).
 			Bold(true)
-
-	pendingStyle = lipgloss.NewStyle().
-			Foreground(gray)
 
 	// Info styles
 	infoStyle = lipgloss.NewStyle().
@@ -394,23 +387,23 @@ func (m Model) renderStatsRow() string {
 			highlightStyle.Render(elapsed.String()),
 	)
 
-	successBox := statBoxStyle.Copy().BorderForeground(green).Render(
+	successBox := statBoxStyle.BorderForeground(green).Render(
 		successStyle.Render("✓ SUCCESS") + "\n" +
 			successStyle.Render(fmt.Sprintf("%d", m.successCount)),
 	)
 
-	errorBox := statBoxStyle.Copy().BorderForeground(red).Render(
+	errorBox := statBoxStyle.BorderForeground(red).Render(
 		errorStyle.Render("✗ FAILED") + "\n" +
 			errorStyle.Render(fmt.Sprintf("%d", m.errorCount)),
 	)
 
-	skippedBox := statBoxStyle.Copy().BorderForeground(gray).Render(
+	skippedBox := statBoxStyle.BorderForeground(gray).Render(
 		dimStyle.Render("⊝ SKIPPED") + "\n" +
 			dimStyle.Render(fmt.Sprintf("%d", m.skippedCount)),
 	)
 
 	pendingCount := m.totalCount - m.doneCount
-	pendingBox := statBoxStyle.Copy().BorderForeground(orange).Render(
+	pendingBox := statBoxStyle.BorderForeground(orange).Render(
 		runningStyle.Render("• PENDING") + "\n" +
 			runningStyle.Render(fmt.Sprintf("%d", pendingCount)),
 	)
@@ -609,12 +602,12 @@ func (m Model) renderSummary() string {
 	totalTime := time.Since(m.startTime).Round(time.Second)
 
 	// Summary boxes
-	timeBox := statBoxStyle.Copy().Width(20).Render(
+	timeBox := statBoxStyle.Width(20).Render(
 		headerStyle.Render("TOTAL TIME") + "\n" +
 			highlightStyle.Render(totalTime.String()),
 	)
 
-	scriptsBox := statBoxStyle.Copy().Width(20).Render(
+	scriptsBox := statBoxStyle.Width(20).Render(
 		headerStyle.Render("SCRIPTS RUN") + "\n" +
 			infoStyle.Render(fmt.Sprintf("%d", m.totalCount)),
 	)
